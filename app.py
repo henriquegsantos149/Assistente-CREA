@@ -74,9 +74,9 @@ INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta."""
 
         # Configuração do Modelo e do RAG (Prompt do Sistema)
-        # Atenção: gemini-1.5-flash é mais estável na versão gratuita e atende perfeitamente os PDFs
+        # Atenção: Utilizando gemini-flash-latest que é o modelo atualizado mais rápido e capaz da API
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-flash-latest",
             system_instruction=system_prompt
         )
 
