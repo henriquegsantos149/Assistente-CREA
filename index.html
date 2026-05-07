@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Atribuição CREA - Ambiental Pro</title>
+    <meta name="description" content="Assistente virtual especialista em legislação do CREA para alunos da Ambiental Pro.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <i class="fa-solid fa-leaf logo-icon"></i>
+            </div>
+            <h1>Assistente de Atribuição CREA</h1>
+            <p class="subtitle">Ambiental Pro - Georreferenciamento</p>
+        </header>
+
+        <main class="main-content">
+            <section class="context-section" id="contextSection">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-user-check"></i> Perfil do Aluno</h2>
+                    <p>Preencha seus dados para configurar a inteligência artificial.</p>
+                </div>
+                
+                <form id="contextForm" class="context-form">
+                    <div class="form-group">
+                        <label for="estado_selecionado">Estado de Registro (CREA)</label>
+                        <select id="estado_selecionado" name="estado_selecionado" required>
+                            <option value="" disabled selected>Selecione um estado...</option>
+                            <option value="AC">Acre (AC)</option>
+                            <option value="AL">Alagoas (AL)</option>
+                            <option value="AP">Amapá (AP)</option>
+                            <option value="AM">Amazonas (AM)</option>
+                            <option value="BA">Bahia (BA)</option>
+                            <option value="CE">Ceará (CE)</option>
+                            <option value="DF">Distrito Federal (DF)</option>
+                            <option value="ES">Espírito Santo (ES)</option>
+                            <option value="GO">Goiás (GO)</option>
+                            <option value="MA">Maranhão (MA)</option>
+                            <option value="MT">Mato Grosso (MT)</option>
+                            <option value="MS">Mato Grosso do Sul (MS)</option>
+                            <option value="MG">Minas Gerais (MG)</option>
+                            <option value="PA">Pará (PA)</option>
+                            <option value="PB">Paraíba (PB)</option>
+                            <option value="PR">Paraná (PR)</option>
+                            <option value="PE">Pernambuco (PE)</option>
+                            <option value="PI">Piauí (PI)</option>
+                            <option value="RJ">Rio de Janeiro (RJ)</option>
+                            <option value="RN">Rio Grande do Norte (RN)</option>
+                            <option value="RS">Rio Grande do Sul (RS)</option>
+                            <option value="RO">Rondônia (RO)</option>
+                            <option value="RR">Roraima (RR)</option>
+                            <option value="SC">Santa Catarina (SC)</option>
+                            <option value="SP">São Paulo (SP)</option>
+                            <option value="SE">Sergipe (SE)</option>
+                            <option value="TO">Tocantins (TO)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formacao_inicial">Formação Inicial (Graduação)</label>
+                        <select id="formacao_inicial" name="formacao_inicial" required>
+                            <option value="" disabled selected>Selecione sua formação...</option>
+                            <option value="Geografia">Geografia</option>
+                            <option value="Engenharia Agronômica">Engenharia Agronômica</option>
+                            <option value="Engenharia Ambiental">Engenharia Ambiental</option>
+                            <option value="Engenharia Civil">Engenharia Civil</option>
+                            <option value="Engenharia Florestal">Engenharia Florestal</option>
+                            <option value="Engenharia Cartográfica">Engenharia Cartográfica</option>
+                            <option value="Biologia">Biologia</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ano_conclusao">Ano de Conclusão da Graduação</label>
+                        <select id="ano_conclusao" name="ano_conclusao" required>
+                            <option value="" disabled selected>Selecione o ano...</option>
+                            <!-- Povoado por JS -->
+                        </select>
+                    </div>
+                </form>
+            </section>
+
+            <section class="chat-section disabled" id="chatSection">
+                <div class="chat-overlay" id="chatOverlay">
+                    <div class="overlay-content">
+                        <i class="fa-solid fa-lock"></i>
+                        <p>Preencha os dados acima para iniciar o atendimento</p>
+                    </div>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="agent-info">
+                            <div class="agent-avatar">
+                                <i class="fa-solid fa-robot"></i>
+                                <span class="status-indicator"></span>
+                            </div>
+                            <div class="agent-details">
+                                <h3>Consultor Especialista CREA</h3>
+                                <span class="status-text">Pronto para ajudar</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Mensagens aparecerão aqui -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <form id="chatForm">
+                            <input type="text" id="userInput" placeholder="Digite sua dúvida sobre atribuição CREA..." disabled autocomplete="off">
+                            <button type="submit" id="sendBtn" disabled>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
