@@ -1,4 +1,5 @@
 import os
+import glob
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import google.generativeai as genai
@@ -14,6 +15,32 @@ CORS(app)
 # O servidor vai puxar a chave secreta do cofre do Google, nunca do código fonte
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
+
+# Faz o upload dos documentos de contexto para o Gemini
+arquivos_rag = []
+
+def carregar_arquivos_contexto():
+    global arquivos_rag
+    # Evita rodar se a chave não estiver configurada ainda
+    if not GEMINI_API_KEY:
+        return
+        
+    pasta = os.path.join(os.path.dirname(__file__), 'Documentos')
+    if not os.path.exists(pasta):
+        return
+        
+    for nome_arquivo in os.listdir(pasta):
+        caminho = os.path.join(pasta, nome_arquivo)
+        if caminho.endswith('.pdf') or caminho.endswith('.txt'):
+            try:
+                print(f"Fazendo upload para a IA do documento: {nome_arquivo}")
+                arquivo_enviado = genai.upload_file(caminho)
+                arquivos_rag.append(arquivo_enviado)
+            except Exception as e:
+                print(f"Erro ao enviar {nome_arquivo}: {e}")
+
+# Executa o carregamento dos documentos ao iniciar a API
+carregar_arquivos_contexto()
 
 @app.route('/chat', methods=['POST'])
 def chat_crea():
@@ -47,13 +74,17 @@ INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta."""
 
         # Configuração do Modelo e do RAG (Prompt do Sistema)
+        # Atenção: O nome correto do modelo no SDK v0.5.2 é gemini-1.5-pro-latest
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-pro",
+            model_name="gemini-1.5-pro-latest",
             system_instruction=system_prompt
         )
 
+        # Junta a mensagem do aluno com os arquivos PDF carregados
+        conteudo_prompt = arquivos_rag + [mensagem_aluno]
+
         # Envia a mensagem para o Google
-        resposta = model.generate_content(mensagem_aluno)
+        resposta = model.generate_content(conteudo_prompt)
 
         # Devolve a resposta formatada para a página do aluno
         return jsonify({"resposta": resposta.text}), 200
