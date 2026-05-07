@@ -67,14 +67,14 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
 
     function enableChat(estado, formacao, ano) {
         if (isChatEnabled) return; // Evita reinicializar se já estiver habilitado com os mesmos dados
-        
+
         isChatEnabled = true;
         chatSection.classList.remove('disabled');
-        
+
         // Esconde o overlay com transição suave
         chatOverlay.style.opacity = '0';
         chatOverlay.style.visibility = 'hidden';
-        
+
         userInput.disabled = false;
         sendBtn.disabled = false;
         userInput.focus();
@@ -88,7 +88,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         console.log("System Prompt Configurado (Backend):", systemPrompt);
 
         // Mensagem de boas-vindas condicional (limpa o chat anterior se o usuário mudar o perfil)
-        chatMessages.innerHTML = ''; 
+        chatMessages.innerHTML = '';
         setTimeout(() => {
             addMessage('agent', `Olá! Eu sou o Consultor Especialista do CREA-${estado}. Verifiquei no seu perfil que você é formado(a) em ${formacao} (${ano}).\n\nComo posso ajudar com o seu processo de extensão de atribuição para Responsabilidade Técnica do CNIR/INCRA hoje?`);
         }, 500);
@@ -97,11 +97,11 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
     function disableChat() {
         isChatEnabled = false;
         chatSection.classList.add('disabled');
-        
+
         // Mostra o overlay
         chatOverlay.style.visibility = 'visible';
         chatOverlay.style.opacity = '1';
-        
+
         userInput.disabled = true;
         sendBtn.disabled = true;
     }
@@ -112,7 +112,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
 
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         if (!isChatEnabled) return;
 
         const message = userInput.value.trim();
@@ -132,23 +132,23 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
             addMessage('agent', response);
         } catch (error) {
             removeMessage(typingId);
-            addMessage('agent', 'Desculpe, ocorreu um erro de conexão. Por favor, tente novamente mais tarde.');
+            addMessage('agent', `[Erro de Sistema]: ${error}. Verifique os Logs no painel do Render para mais detalhes.`);
         }
     });
 
     function addMessage(sender, text) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', `${sender}-message`);
-        
+
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('message-content');
-        
+
         // Renderiza quebras de linha básicas
         contentDiv.innerHTML = text.replace(/\n/g, '<br>');
-        
+
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
-        
+
         scrollToBottom();
     }
 
@@ -157,14 +157,14 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', 'agent-message');
         messageDiv.id = id;
-        
+
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('message-content', 'typing-indicator');
         contentDiv.innerHTML = '<span></span><span></span><span></span>';
-        
+
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
-        
+
         scrollToBottom();
         return id;
     }
@@ -185,11 +185,11 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         return new Promise(async (resolve, reject) => {
             console.log("=== ENVIANDO PARA O BACK-END FLASK ===");
             console.log("User Message:\n", userMessage);
-            
+
             try {
                 // Altere o URL caso o seu backend esteja hospedado em outro endereço (ex: Cloud Run)
-                const apiUrl = 'http://127.0.0.1:8080/chat';
-                
+                const apiUrl = 'https://assistente-crea.onrender.com/chat';
+
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
@@ -204,7 +204,12 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
+                    let errorMessage = `Erro HTTP: ${response.status}`;
+                    try {
+                        const errData = await response.json();
+                        if (errData.erro) errorMessage = errData.erro;
+                    } catch(e) {}
+                    throw new Error(errorMessage);
                 }
 
                 const data = await response.json();
@@ -216,7 +221,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
                 resolve(data.resposta);
             } catch (error) {
                 console.error("Erro na comunicação com a API:", error);
-                reject(error);
+                reject(error.message);
             }
         });
     }
