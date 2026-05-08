@@ -84,11 +84,12 @@ COMO VOCÊ SE COMUNICA COM O ALUNO:
             "X-Title": "Assistente CREA"
         }
 
-        # Lista de modelos em ordem de preferência (do mais ao menos inteligente)
+        # Lista de modelos verificados e ativos na OpenRouter (atualizada em Mai/2026)
         MODELOS_FALLBACK = [
-            "meta-llama/llama-3.3-70b-instruct:free",
-            "google/gemma-3-27b-it:free",
-            "mistralai/mistral-7b-instruct:free",
+            "meta-llama/llama-3.3-70b-instruct:free",   # 1º - O mais inteligente
+            "google/gemma-4-31b-it:free",               # 2º - Gemma 4 do Google
+            "google/gemma-4-26b-a4b-it:free",           # 3º - Variante eficiente do Gemma 4
+            "nvidia/nemotron-nano-12b-v2-vl:free",      # 4º - Nemotron da Nvidia (estável)
         ]
 
         resposta_texto = None
