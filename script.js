@@ -241,8 +241,8 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
             console.log("User Message:\n", userMessage);
 
             try {
-                // Altere o URL caso o seu backend esteja hospedado em outro endereço (ex: Cloud Run)
-                const apiUrl = 'https://assistente-crea.onrender.com/chat';
+                // Rota relativa: funciona perfeitamente tanto no Vercel quanto rodando localmente
+                const apiUrl = '/chat';
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
