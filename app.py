@@ -88,7 +88,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         }
         
         payload = {
-            "model": "meta-llama/llama-3.3-70b-instruct:free",
+            "model": "google/gemini-2.5-flash:free",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": mensagem_aluno}

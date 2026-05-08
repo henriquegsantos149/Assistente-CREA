@@ -186,7 +186,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
             addMessage('agent', response);
         } catch (error) {
             removeMessage(typingId);
-            addMessage('agent', `[Erro de Sistema]: ${error}. Verifique os Logs no painel do Render para mais detalhes.`);
+            addMessage('agent', `[Erro de Comunicação]: ${error}.`);
         }
     });
 
