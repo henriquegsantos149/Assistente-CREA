@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const estadoSelect = document.getElementById('estado_selecionado');
-    const formacaoSelect = document.getElementById('formacao_inicial');
-    const anoSelect = document.getElementById('ano_conclusao');
+    const nomeInput = document.getElementById('nome_aluno');
+    const estadoInput = document.getElementById('estado_selecionado');
+    const formacaoInput = document.getElementById('formacao_inicial');
+    const anoInput = document.getElementById('ano_conclusao');
+    
+    const profileModal = document.getElementById('profileModal');
+    const contextForm = document.getElementById('contextForm');
+    const restartBtn = document.getElementById('restartBtn');
+    
     const chatSection = document.getElementById('chatSection');
     const chatOverlay = document.getElementById('chatOverlay');
     const userInput = document.getElementById('userInput');
@@ -11,14 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatSuggestions = document.getElementById('chatSuggestions');
     const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
-    // Popula o campo de ano de conclusão de 2026 até 1980
-    const currentYear = new Date().getFullYear(); // Ou fixo em 2026, como solicitado
-    for (let year = 2026; year >= 1980; year--) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        anoSelect.appendChild(option);
-    }
+    // Mostra o modal ao carregar a página
+    profileModal.classList.add('active');
 
     // Variáveis de Estado
     let systemPrompt = '';
@@ -55,19 +55,24 @@ O Passo a Passo: Quando orientar a abertura do processo, descreva exatamente o c
 INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta.`;
 
-    function checkFormCompletion() {
-        const estado = estadoSelect.value;
-        const formacao = formacaoSelect.value;
-        const ano = anoSelect.value;
+    contextForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nome = nomeInput.value.trim();
+        const estado = estadoInput.value.trim().toUpperCase();
+        const formacao = formacaoInput.value.trim();
+        const ano = anoInput.value.trim();
 
-        if (estado && formacao && ano) {
-            enableChat(estado, formacao, ano);
-        } else {
-            disableChat();
+        if (nome && estado && formacao && ano) {
+            profileModal.classList.remove('active');
+            enableChat(nome, estado, formacao, ano);
         }
-    }
+    });
 
-    function enableChat(estado, formacao, ano) {
+    restartBtn.addEventListener('click', () => {
+        disableChat();
+    });
+
+    function enableChat(nome, estado, formacao, ano) {
         if (isChatEnabled) return; // Evita reinicializar se já estiver habilitado com os mesmos dados
 
         isChatEnabled = true;
@@ -95,7 +100,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         // Mensagem de boas-vindas condicional (limpa o chat anterior se o usuário mudar o perfil)
         chatMessages.innerHTML = '';
         setTimeout(() => {
-            addMessage('agent', `Olá! Eu sou o Consultor Especialista do CREA-${estado}. Verifiquei no seu perfil que você é formado(a) em ${formacao} (${ano}).\n\nComo posso ajudar com o seu processo de extensão de atribuição para Responsabilidade Técnica do CNIR/INCRA hoje?`);
+            addMessage('agent', `Olá, **${nome}**! Eu sou o Consultor Especialista do CREA-${estado}. Verifiquei no seu perfil que você é formado(a) em ${formacao} (${ano}).\n\nComo posso ajudar com o seu processo de extensão de atribuição para Responsabilidade Técnica do CNIR/INCRA hoje?`);
         }, 500);
     }
 
@@ -110,6 +115,9 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
 
         userInput.disabled = true;
         sendBtn.disabled = true;
+        
+        // Abre o modal novamente
+        profileModal.classList.add('active');
     }
 
     // Configura evento de clique nas sugestões
@@ -126,9 +134,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         });
     });
 
-    estadoSelect.addEventListener('change', checkFormCompletion);
-    formacaoSelect.addEventListener('change', checkFormCompletion);
-    anoSelect.addEventListener('change', checkFormCompletion);
+    // Eventos de clique nas sugestões mantidos...
 
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -217,9 +223,10 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
                     },
                     body: JSON.stringify({
                         mensagem: userMessage,
-                        estado: estadoSelect.value,
-                        formacao: formacaoSelect.value,
-                        ano: anoSelect.value
+                        nome: nomeInput.value,
+                        estado: estadoInput.value,
+                        formacao: formacaoInput.value,
+                        ano: anoInput.value
                     })
                 });
 

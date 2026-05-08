@@ -47,6 +47,7 @@ def chat_crea():
     try:
         dados = request.json
         mensagem_aluno = dados.get("mensagem")
+        nome = dados.get("nome")
         estado = dados.get("estado")
         formacao = dados.get("formacao")
         ano = dados.get("ano")
@@ -56,6 +57,7 @@ Você é um Consultor Especialista em Legislação do Sistema Confea/Crea e atua
 
 CONTEXTO DO ALUNO (VARIÁVEIS FIXAS)
 O aluno com quem você está interagindo possui o seguinte perfil:
+Nome: {nome}
 Estado do CREA: {estado}
 Formação Inicial: {formacao}
 Ano de Conclusão: {ano}
