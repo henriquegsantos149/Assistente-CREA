@@ -539,7 +539,7 @@ body {
     box-shadow: none;
 }
 
-.footer-logos {
+.footer-actions {
     display: flex;
     justify-content: center;
     padding: 0.75rem 0;
@@ -548,8 +548,63 @@ body {
     border-bottom-right-radius: var(--radius-lg);
 }
 
-.confea-logo {
-    height: 35px;
-    opacity: 0.6;
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-download {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-download:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    bottom: 120%; /* Abre para cima */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-surface);
+    min-width: 260px;
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: var(--text-primary);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    transition: background 0.2s ease;
+}
+
+.dropdown-content a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--accent-color);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.2s ease;
 }
