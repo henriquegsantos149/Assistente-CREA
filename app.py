@@ -91,9 +91,9 @@ O Passo a Passo: Quando orientar a abertura do processo, descreva exatamente o c
 INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta."""
 
-        # Chama a API da OpenRouter usando o modelo Gratuito do Gemini 2.5 Flash
+        # Chama a API da OpenRouter usando o modelo Gratuito da Nvidia
         response = client.chat.completions.create(
-            model="google/gemini-2.5-flash:free",
+            model="nvidia/nemotron-3-super-120b-a12b:free",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": mensagem_aluno}

@@ -16,6 +16,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatMessages = document.getElementById('chatMessages');
     const chatSuggestions = document.getElementById('chatSuggestions');
     const suggestionChips = document.querySelectorAll('.suggestion-chip');
+    const btnDownload = document.getElementById('btnDownload');
+    const dropdownContent = document.getElementById('dropdownContent');
+
+    // Controle do Dropdown de Documentos
+    let dropdownTimeout;
+    
+    btnDownload.addEventListener('click', (e) => {
+        dropdownContent.classList.toggle('show');
+    });
+
+    const dropdownContainer = document.querySelector('.dropdown');
+    dropdownContainer.addEventListener('mouseenter', () => {
+        clearTimeout(dropdownTimeout);
+        dropdownContent.classList.add('show');
+    });
+
+    dropdownContainer.addEventListener('mouseleave', () => {
+        dropdownTimeout = setTimeout(() => {
+            dropdownContent.classList.remove('show');
+        }, 2500); // 2.5 segundos extras antes de sumir
+    });
+
+    // Fecha ao clicar fora
+    window.addEventListener('click', (e) => {
+        if (!dropdownContainer.contains(e.target)) {
+            dropdownContent.classList.remove('show');
+        }
+    });
 
     // Mostra o modal ao carregar a página
     profileModal.classList.add('active');
