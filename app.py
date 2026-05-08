@@ -16,11 +16,7 @@ CORS(app)
 # O servidor vai puxar a chave da Open Router
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
-# Inicializa o cliente do OpenRouter usando a SDK da OpenAI
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY
-)
+# Inicialização via requisições HTTP Diretas para maior estabilidade
 
 # Faz a extração do texto dos documentos de contexto
 conteudo_documentos_rag = ""
@@ -57,6 +53,9 @@ def carregar_arquivos_contexto():
 # Executa a leitura dos documentos ao iniciar a API
 carregar_arquivos_contexto()
 
+import requests
+import json
+
 @app.route('/chat', methods=['POST'])
 def chat_crea():
     try:
@@ -91,21 +90,29 @@ O Passo a Passo: Quando orientar a abertura do processo, descreva exatamente o c
 INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta."""
 
-        # Chama a API da OpenRouter usando o modelo Gratuito da Nvidia
-        response = client.chat.completions.create(
-            model="nvidia/nemotron-3-super-120b-a12b:free",
-            messages=[
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://ambientalpro.com.br", 
+            "X-Title": "Assistente CREA"
+        }
+        
+        payload = {
+            "model": "nvidia/nemotron-3-super-120b-a12b:free",
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": mensagem_aluno}
-            ],
-            # Passa o site da Ambiental Pro para os logs do OpenRouter
-            extra_headers={
-                "HTTP-Referer": "https://ambientalpro.com.br", 
-                "X-Title": "Assistente CREA"
-            }
-        )
+            ]
+        }
 
-        resposta_texto = response.choices[0].message.content
+        # Chama a API da OpenRouter via Requisição Direta para evitar bugs do SDK da OpenAI
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", json=payload, headers=headers)
+        data = res.json()
+
+        if "choices" not in data or not data["choices"]:
+            raise Exception(f"Erro da API da OpenRouter: {data}")
+
+        resposta_texto = data["choices"][0]["message"]["content"]
 
         return jsonify({"resposta": resposta_texto}), 200
 
