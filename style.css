@@ -399,6 +399,7 @@ body {
 
 .message {
     max-width: 85%;
+    width: fit-content;
     display: flex;
     animation: messageEnter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     transform-origin: bottom;
@@ -423,6 +424,9 @@ body {
     font-size: 0.95rem;
     line-height: 1.6;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow-wrap: break-word;
+    word-break: break-word;
+    min-width: 0;
 }
 
 .agent-message .message-content {
@@ -458,6 +462,18 @@ body {
 .agent-message .message-content strong {
     color: var(--accent-color);
     font-weight: 600;
+}
+
+/* Links legíveis no tema escuro */
+.message-content a {
+    color: var(--accent-color);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    word-break: break-all;
+}
+.message-content a:hover {
+    color: #fff;
+    text-decoration: none;
 }
 
 .message-content h1, 
