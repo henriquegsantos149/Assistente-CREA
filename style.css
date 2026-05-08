@@ -438,6 +438,37 @@ body {
     border-bottom-right-radius: 0.25rem;
 }
 
+/* Formatação do Markdown (Textos da IA) */
+.message-content p {
+    margin-bottom: 0.85rem;
+}
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content ul, 
+.message-content ol {
+    margin-bottom: 0.85rem;
+    padding-left: 1.5rem;
+}
+.message-content li {
+    margin-bottom: 0.35rem;
+}
+
+.agent-message .message-content strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.message-content h1, 
+.message-content h2, 
+.message-content h3, 
+.message-content h4 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
 /* Typing Indicator */
 .typing-indicator {
     display: flex;
