@@ -143,8 +143,8 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('message-content');
 
-        // Renderiza quebras de linha básicas
-        contentDiv.innerHTML = text.replace(/\n/g, '<br>');
+        // Renderiza o Markdown vindo da IA para um HTML bonito usando o Marked.js
+        contentDiv.innerHTML = marked.parse(text);
 
         messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
