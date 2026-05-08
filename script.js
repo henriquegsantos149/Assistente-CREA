@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('sendBtn');
     const chatForm = document.getElementById('chatForm');
     const chatMessages = document.getElementById('chatMessages');
+    const chatSuggestions = document.getElementById('chatSuggestions');
+    const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
     // Popula o campo de ano de conclusão de 2026 até 1980
     const currentYear = new Date().getFullYear(); // Ou fixo em 2026, como solicitado
@@ -85,6 +87,9 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
             .replace(/{{formacao_inicial}}/g, formacao)
             .replace(/{{ano_conclusao}}/g, ano);
 
+        // Mostra as sugestões
+        chatSuggestions.classList.add('visible');
+
         console.log("System Prompt Configurado (Backend):", systemPrompt);
 
         // Mensagem de boas-vindas condicional (limpa o chat anterior se o usuário mudar o perfil)
@@ -97,6 +102,7 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
     function disableChat() {
         isChatEnabled = false;
         chatSection.classList.add('disabled');
+        chatSuggestions.classList.remove('visible');
 
         // Mostra o overlay
         chatOverlay.style.visibility = 'visible';
@@ -105,6 +111,20 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         userInput.disabled = true;
         sendBtn.disabled = true;
     }
+
+    // Configura evento de clique nas sugestões
+    suggestionChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            if (!isChatEnabled) return;
+            // Preenche o input
+            userInput.value = chip.textContent;
+            // Foca e esconde as sugestões
+            userInput.focus();
+            chatSuggestions.classList.remove('visible');
+            // Dispara o formulário automaticamente
+            chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        });
+    });
 
     estadoSelect.addEventListener('change', checkFormCompletion);
     formacaoSelect.addEventListener('change', checkFormCompletion);
