@@ -84,28 +84,58 @@ COMO VOCÊ SE COMUNICA COM O ALUNO:
             "X-Title": "Assistente CREA"
         }
 
-        # Sistema de Fallback: tenta os melhores modelos em ordem de preferência.
-        # Se o 1º estiver sobrecarregado ou indisponível, a OpenRouter tenta o 2º, e assim por diante.
-        payload = {
-            "models": [
-                "meta-llama/llama-3.3-70b-instruct:free",
-                "google/gemma-3-27b-it:free",
-                "mistralai/mistral-7b-instruct:free"
-            ],
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": mensagem_aluno}
-            ]
-        }
+        # Lista de modelos em ordem de preferência (do mais ao menos inteligente)
+        MODELOS_FALLBACK = [
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "google/gemma-3-27b-it:free",
+            "mistralai/mistral-7b-instruct:free",
+        ]
 
-        # Chama a API da OpenRouter via Requisição Direta
-        res = requests.post("https://openrouter.ai/api/v1/chat/completions", json=payload, headers=headers)
-        data = res.json()
+        resposta_texto = None
+        ultimo_erro = None
 
-        if "choices" not in data or not data["choices"]:
-            raise Exception(f"Erro da API da OpenRouter: {data}")
+        for modelo in MODELOS_FALLBACK:
+            try:
+                payload = {
+                    "model": modelo,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": mensagem_aluno}
+                    ]
+                }
 
-        resposta_texto = data["choices"][0]["message"]["content"]
+                res = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    json=payload,
+                    headers=headers,
+                    timeout=60
+                )
+                data = res.json()
+
+                # Se a API retornou um erro (429, 404, etc.), tenta o próximo modelo
+                if "error" in data:
+                    codigo_erro = data["error"].get("code", "?")
+                    ultimo_erro = f"Modelo '{modelo}' falhou com código {codigo_erro}."
+                    print(f"[FALLBACK] {ultimo_erro} Tentando próximo...")
+                    continue
+
+                if "choices" not in data or not data["choices"]:
+                    ultimo_erro = f"Modelo '{modelo}' retornou resposta vazia."
+                    print(f"[FALLBACK] {ultimo_erro} Tentando próximo...")
+                    continue
+
+                # Resposta válida encontrada!
+                resposta_texto = data["choices"][0]["message"]["content"]
+                print(f"[OK] Resposta obtida com sucesso usando o modelo: {modelo}")
+                break
+
+            except Exception as e:
+                ultimo_erro = f"Exceção ao chamar '{modelo}': {str(e)}"
+                print(f"[FALLBACK] {ultimo_erro} Tentando próximo...")
+                continue
+
+        if resposta_texto is None:
+            raise Exception(f"Todos os modelos falharam. Último erro: {ultimo_erro}")
 
         return jsonify({"resposta": resposta_texto}), 200
 
