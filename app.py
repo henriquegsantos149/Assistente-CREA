@@ -2,7 +2,8 @@ import os
 import glob
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import google.generativeai as genai
+from openai import OpenAI
+from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 
 # Carrega as variáveis de ambiente do arquivo .env
@@ -12,34 +13,48 @@ app = Flask(__name__)
 # Libera o acesso para o seu front-end na Antigravity se comunicar com esta API
 CORS(app)
 
-# O servidor vai puxar a chave secreta do cofre do Google, nunca do código fonte
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+# O servidor vai puxar a chave da Open Router
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 
-# Faz o upload dos documentos de contexto para o Gemini
-arquivos_rag = []
+# Inicializa o cliente do OpenRouter usando a SDK da OpenAI
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY
+)
+
+# Faz a extração do texto dos documentos de contexto
+conteudo_documentos_rag = ""
 
 def carregar_arquivos_contexto():
-    global arquivos_rag
-    # Evita rodar se a chave não estiver configurada ainda
-    if not GEMINI_API_KEY:
-        return
-        
+    global conteudo_documentos_rag
     pasta = os.path.join(os.path.dirname(__file__), 'Documentos')
     if not os.path.exists(pasta):
+        print("Pasta Documentos não encontrada.")
         return
         
+    textos = []
     for nome_arquivo in os.listdir(pasta):
         caminho = os.path.join(pasta, nome_arquivo)
-        if caminho.endswith('.pdf') or caminho.endswith('.txt'):
-            try:
-                print(f"Fazendo upload para a IA do documento: {nome_arquivo}")
-                arquivo_enviado = genai.upload_file(caminho)
-                arquivos_rag.append(arquivo_enviado)
-            except Exception as e:
-                print(f"Erro ao enviar {nome_arquivo}: {e}")
+        try:
+            if caminho.endswith('.pdf'):
+                print(f"Lendo PDF: {nome_arquivo}")
+                leitor = PdfReader(caminho)
+                texto_pdf = ""
+                for pagina in leitor.pages:
+                    texto_pdf += pagina.extract_text() + "\n"
+                textos.append(f"--- INÍCIO DO DOCUMENTO: {nome_arquivo} ---\n{texto_pdf}\n--- FIM DO DOCUMENTO ---")
+            
+            elif caminho.endswith('.txt'):
+                print(f"Lendo TXT: {nome_arquivo}")
+                with open(caminho, 'r', encoding='utf-8') as f:
+                    textos.append(f"--- INÍCIO DO DOCUMENTO: {nome_arquivo} ---\n{f.read()}\n--- FIM DO DOCUMENTO ---")
+        except Exception as e:
+            print(f"Erro ao ler {nome_arquivo}: {e}")
+            
+    conteudo_documentos_rag = "\n\n".join(textos)
+    print("Leitura de documentos concluída com sucesso!")
 
-# Executa o carregamento dos documentos ao iniciar a API
+# Executa a leitura dos documentos ao iniciar a API
 carregar_arquivos_contexto()
 
 @app.route('/chat', methods=['POST'])
@@ -63,7 +78,8 @@ Formação Inicial: {formacao}
 Ano de Conclusão: {ano}
 
 BASE DE CONHECIMENTO (RAG)
-Você opera estritamente com base nos documentos fornecidos no seu contexto (RAG), que contêm a legislação federal (Decisão PL-2087/2004, Resolução 1.073/2016) e os Manuais de Procedimento específicos dos CREAs estaduais.
+Você opera estritamente com base nos documentos fornecidos abaixo, que contêm a legislação federal e os Manuais de Procedimento específicos dos CREAs estaduais.
+{conteudo_documentos_rag}
 
 REGRAS DE CONDUTA (OBRIGATÓRIAS E INQUEBRÁVEIS)
 Filtro de Jurisdição: Baseie sua orientação processual exclusivamente no manual do estado {estado}. Ignore completamente as regras burocráticas de outros estados.
@@ -75,21 +91,23 @@ O Passo a Passo: Quando orientar a abertura do processo, descreva exatamente o c
 INSTRUÇÃO FINAL
 Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta."""
 
-        # Configuração do Modelo e do RAG (Prompt do Sistema)
-        # Atenção: Utilizando gemini-2.5-flash
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=system_prompt
+        # Chama a API da OpenRouter usando o modelo Gratuito do Gemini 2.5 Flash
+        response = client.chat.completions.create(
+            model="google/gemini-2.5-flash:free",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": mensagem_aluno}
+            ],
+            # Passa o site da Ambiental Pro para os logs do OpenRouter
+            extra_headers={
+                "HTTP-Referer": "https://ambientalpro.com.br", 
+                "X-Title": "Assistente CREA"
+            }
         )
 
-        # Junta a mensagem do aluno com os arquivos PDF carregados
-        conteudo_prompt = arquivos_rag + [mensagem_aluno]
+        resposta_texto = response.choices[0].message.content
 
-        # Envia a mensagem para o Google
-        resposta = model.generate_content(conteudo_prompt)
-
-        # Devolve a resposta formatada para a página do aluno
-        return jsonify({"resposta": resposta.text}), 200
+        return jsonify({"resposta": resposta_texto}), 200
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
