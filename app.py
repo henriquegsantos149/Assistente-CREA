@@ -2,9 +2,9 @@ import os
 import glob
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from openai import OpenAI
-from PyPDF2 import PdfReader
 from dotenv import load_dotenv
+import requests
+import json
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -15,8 +15,6 @@ CORS(app)
 
 # O servidor vai puxar a chave da Open Router
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-
-# Inicialização via requisições HTTP Diretas para maior estabilidade
 
 # Faz a extração do texto dos documentos de contexto
 conteudo_documentos_rag = ""
@@ -32,29 +30,19 @@ def carregar_arquivos_contexto():
     for nome_arquivo in os.listdir(pasta):
         caminho = os.path.join(pasta, nome_arquivo)
         try:
-            if caminho.endswith('.pdf'):
-                print(f"Lendo PDF: {nome_arquivo}")
-                leitor = PdfReader(caminho)
-                texto_pdf = ""
-                for pagina in leitor.pages:
-                    texto_pdf += pagina.extract_text() + "\n"
-                textos.append(f"--- INÍCIO DO DOCUMENTO: {nome_arquivo} ---\n{texto_pdf}\n--- FIM DO DOCUMENTO ---")
-            
-            elif caminho.endswith('.txt'):
-                print(f"Lendo TXT: {nome_arquivo}")
+            if caminho.endswith('.md') or caminho.endswith('.txt'):
+                print(f"Lendo documento de texto: {nome_arquivo}")
                 with open(caminho, 'r', encoding='utf-8') as f:
                     textos.append(f"--- INÍCIO DO DOCUMENTO: {nome_arquivo} ---\n{f.read()}\n--- FIM DO DOCUMENTO ---")
         except Exception as e:
             print(f"Erro ao ler {nome_arquivo}: {e}")
             
     conteudo_documentos_rag = "\n\n".join(textos)
-    print("Leitura de documentos concluída com sucesso!")
+    print("Leitura de documentos Markdown/TXT concluída com sucesso!")
 
 # Executa a leitura dos documentos ao iniciar a API
 carregar_arquivos_contexto()
 
-import requests
-import json
 
 @app.route('/chat', methods=['POST'])
 def chat_crea():
