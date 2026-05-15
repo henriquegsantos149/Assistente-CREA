@@ -399,3 +399,12 @@ body {
     background: var(--accent-hover);
     transform: scale(1.05);
 }
+
+/* Dropdown de Documentos */
+.dropdown { position: relative; display: inline-block; }
+.btn-download { background: transparent; color: var(--text-secondary); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.6rem 1rem; border-radius: var(--radius-md); cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; font-family: inherit; }
+.btn-download:hover { color: var(--accent-color); border-color: var(--accent-color); background: rgba(16, 185, 129, 0.05); }
+.dropdown-content { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; background-color: var(--bg-surface); min-width: 260px; box-shadow: var(--shadow-lg); border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.1); z-index: 100; overflow: hidden; }
+.dropdown-content a { color: var(--text-primary); padding: 12px 16px; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; transition: background 0.2s ease; }
+.dropdown-content a:hover { background-color: rgba(255, 255, 255, 0.05); color: var(--accent-color); }
+.dropdown:hover .dropdown-content { display: block; animation: fadeIn 0.2s ease; }
