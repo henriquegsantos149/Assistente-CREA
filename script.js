@@ -1,194 +1,229 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const nomeInput = document.getElementById('nome_aluno');
-    const estadoInput = document.getElementById('estado_selecionado');
-    const formacaoInput = document.getElementById('formacao_inicial');
-    const anoInput = document.getElementById('ano_conclusao');
-    
-    const profileModal = document.getElementById('profileModal');
-    const contextForm = document.getElementById('contextForm');
-    const restartBtn = document.getElementById('restartBtn');
-    
-    const chatSection = document.getElementById('chatSection');
-    const chatOverlay = document.getElementById('chatOverlay');
+    const chatMessages = document.getElementById('chatMessages');
+    const dynamicInputWrapper = document.getElementById('dynamicInputWrapper');
+    const interactiveOptions = document.getElementById('interactiveOptions');
+    const chatInputContainer = document.getElementById('chatInputContainer');
+    const chatForm = document.getElementById('chatForm');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
-    const chatForm = document.getElementById('chatForm');
-    const chatMessages = document.getElementById('chatMessages');
+    const restartBtn = document.getElementById('restartBtn');
     const chatSuggestions = document.getElementById('chatSuggestions');
     const suggestionChips = document.querySelectorAll('.suggestion-chip');
-    const btnDownload = document.getElementById('btnDownload');
-    const dropdownContent = document.getElementById('dropdownContent');
-
-    // Controle do Dropdown de Documentos
-    let dropdownTimeout;
-    
-    btnDownload.addEventListener('click', (e) => {
-        dropdownContent.classList.toggle('show');
-    });
-
-    const dropdownContainer = document.querySelector('.dropdown');
-    dropdownContainer.addEventListener('mouseenter', () => {
-        clearTimeout(dropdownTimeout);
-        dropdownContent.classList.add('show');
-    });
-
-    dropdownContainer.addEventListener('mouseleave', () => {
-        dropdownTimeout = setTimeout(() => {
-            dropdownContent.classList.remove('show');
-        }, 2500); // 2.5 segundos extras antes de sumir
-    });
-
-    // Fecha ao clicar fora
-    window.addEventListener('click', (e) => {
-        if (!dropdownContainer.contains(e.target)) {
-            dropdownContent.classList.remove('show');
-        }
-    });
-
-    // Mostra o modal ao carregar a página
-    profileModal.classList.add('active');
 
     // Variáveis de Estado
-    let systemPrompt = '';
-    let isChatEnabled = false;
+    let currentChatSession = 0; 
+    let onboardingState = 'START'; // START, NAME, DEGREE, YEAR, HAS_CREA, STATE, READY
+    
+    let userData = {
+        nome: '',
+        formacao: '',
+        ano: '',
+        hasCrea: '',
+        estado: ''
+    };
 
-    // Prompt do Sistema exato exigido
-    const systemPromptTemplate = `SUA IDENTIDADE E MISSÃO
-Você é um Consultor Especialista em Legislação do Sistema Confea/Crea e atua como um despachante virtual técnico da Ambiental Pro. Sua missão exclusiva é guiar os alunos do curso de pós-graduação em Georreferenciamento a obterem a extensão de atribuição profissional para assumir a Responsabilidade Técnica do Cadastro Nacional de Imóveis Rurais (CNIR/INCRA).
+    // Inicia o chat automaticamente ao carregar
+    startOnboarding();
 
-CONTEXTO DO ALUNO (VARIÁVEIS FIXAS)
-O aluno com quem você está interagindo possui o seguinte perfil:
+    if (restartBtn) {
+        restartBtn.addEventListener('click', () => {
+            startOnboarding();
+        });
+    }
 
-Estado do CREA: {{estado_selecionado}}
+    function startOnboarding() {
+        currentChatSession++;
+        const session = currentChatSession;
+        
+        chatMessages.innerHTML = '';
+        onboardingState = 'NAME';
+        userData = { nome: '', formacao: '', ano: '', hasCrea: '', estado: '' };
+        
+        chatSuggestions.classList.remove('visible');
+        hideInput();
 
-Formação Inicial: {{formacao_inicial}}
+        const welcomeParts = [
+            `Olá, seja muito bem-vindo(a)! Eu sou o Agente Pro, um agente conversacional com IA que opera 24 horas por dia, todos os dias, para te auxiliar em sua carreira profissional.`,
+            `Para começar, gostaria de saber o seu nome.`
+        ];
+        
+        displaySequentialMessages(welcomeParts, session).then(() => {
+            if (currentChatSession === session) {
+                showTextInput('Digite seu nome...');
+            }
+        });
+    }
 
-Ano de Conclusão: {{ano_conclusao}}
+    function hideInput() {
+        dynamicInputWrapper.style.opacity = '0';
+        dynamicInputWrapper.style.pointerEvents = 'none';
+        
+        // Hide specific elements
+        interactiveOptions.style.display = 'none';
+        chatInputContainer.style.display = 'none';
+        interactiveOptions.innerHTML = '';
+        userInput.value = '';
+    }
 
-BASE DE CONHECIMENTO (RAG)
-Você opera estritamente com base nos documentos fornecidos no seu contexto (RAG), que contêm a legislação federal (Decisão PL-2087/2004, Resolução 1.073/2016) e os Manuais de Procedimento específicos dos CREAs estaduais.
-
-REGRAS DE CONDUTA (OBRIGATÓRIAS E INQUEBRÁVEIS)
-
-Filtro de Jurisdição: Baseie sua orientação processual exclusivamente no manual do estado {{estado_selecionado}}. Ignore completamente as regras burocráticas de outros estados.
-
-Validação de Formação: Verifique imediatamente se a {{formacao_inicial}} do aluno consta no rol de profissões autorizadas pelo Inciso VI da PL-2087/2004. Se não constar, informe de forma educada, técnica e direta que o curso não lhe dará a atribuição de georreferenciamento, pois a lei não ampara a formação original dele.
-
-Proibição de Alucinação: Se o aluno perguntar sobre uma taxa, prazo ou documento que não está na sua base de dados do estado dele, responda exatamente assim: "Não tenho essa informação específica no momento. Recomendo consultar diretamente o atendimento oficial do CREA-{{estado_selecionado}}." Jamais invente ou estime prazos e valores.
-
-Tom de Voz: Seja profissional, direto, técnico e resolutivo. Não adule o usuário. Cite as normativas corretas quando orientar a montagem do requerimento.
-
-O Passo a Passo: Quando orientar a abertura do processo, descreva exatamente o caminho de cliques no sistema online do CREA dele e a lista de verificação (checklist) de documentos que ele precisa anexar.
-
-INSTRUÇÃO FINAL
-Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base de Conhecimento, e forneça a resposta.`;
-
-    contextForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const nome = nomeInput.value.trim();
-        const estado = estadoInput.value.trim().toUpperCase();
-        const formacao = formacaoInput.value.trim();
-        const ano = anoInput.value.trim();
-
-        if (nome && estado && formacao && ano) {
-            profileModal.classList.remove('active');
-            enableChat(nome, estado, formacao, ano);
-        }
-    });
-
-    restartBtn.addEventListener('click', () => {
-        disableChat();
-    });
-
-    function enableChat(nome, estado, formacao, ano) {
-        if (isChatEnabled) return; // Evita reinicializar se já estiver habilitado com os mesmos dados
-
-        isChatEnabled = true;
-        chatSection.classList.remove('disabled');
-
-        // Esconde o overlay com transição suave
-        chatOverlay.style.opacity = '0';
-        chatOverlay.style.visibility = 'hidden';
-
+    function showTextInput(placeholderText = 'Digite sua resposta...', type = 'text') {
+        interactiveOptions.style.display = 'none';
+        chatInputContainer.style.display = 'block';
+        
+        userInput.type = type;
+        userInput.placeholder = placeholderText;
         userInput.disabled = false;
         sendBtn.disabled = false;
-        userInput.focus();
-
-        // Injeção de Variáveis no System Prompt
-        systemPrompt = systemPromptTemplate
-            .replace(/{{estado_selecionado}}/g, estado)
-            .replace(/{{formacao_inicial}}/g, formacao)
-            .replace(/{{ano_conclusao}}/g, ano);
-
-        // Mostra as sugestões
-        chatSuggestions.classList.add('visible');
-
-        console.log("System Prompt Configurado (Backend):", systemPrompt);
-
-        // Mensagem de boas-vindas condicional (limpa o chat anterior se o usuário mudar o perfil)
-        chatMessages.innerHTML = '';
-        setTimeout(() => {
-            addMessage('agent', `Olá, **${nome}**! Eu sou o Consultor Especialista do CREA-${estado}. Verifiquei no seu perfil que você é formado(a) em ${formacao} (${ano}).\n\nComo posso ajudar com o seu processo de extensão de atribuição para Responsabilidade Técnica do CNIR/INCRA hoje?`);
-        }, 500);
-    }
-
-    function disableChat() {
-        isChatEnabled = false;
-        chatSection.classList.add('disabled');
-        chatSuggestions.classList.remove('visible');
-
-        // Mostra o overlay
-        chatOverlay.style.visibility = 'visible';
-        chatOverlay.style.opacity = '1';
-
-        userInput.disabled = true;
-        sendBtn.disabled = true;
         
-        // Abre o modal novamente
-        profileModal.classList.add('active');
+        dynamicInputWrapper.style.opacity = '1';
+        dynamicInputWrapper.style.pointerEvents = 'all';
+        userInput.focus();
     }
 
-    // Configura evento de clique nas sugestões
+    function showInteractiveOptions(options) {
+        chatInputContainer.style.display = 'none';
+        interactiveOptions.style.display = 'flex';
+        interactiveOptions.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            btn.textContent = opt.label;
+            btn.addEventListener('click', () => handleOptionClick(opt.value, opt.label));
+            interactiveOptions.appendChild(btn);
+        });
+
+        dynamicInputWrapper.style.opacity = '1';
+        dynamicInputWrapper.style.pointerEvents = 'all';
+    }
+
+    function handleOptionClick(value, label) {
+        // Mock user submitting this text
+        userInput.value = value;
+        
+        // Process submission
+        processUserInput(value, label);
+    }
+
+        chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+        
+        // Esconde as sugestões assim que o usuário digita algo na fase final
+        if (onboardingState === 'READY') {
+            chatSuggestions.classList.remove('visible');
+        }
+
+        processUserInput(text, text);
+    });
+
     suggestionChips.forEach(chip => {
         chip.addEventListener('click', () => {
-            if (!isChatEnabled) return;
-            // Preenche o input
-            userInput.value = chip.textContent;
-            // Foca e esconde as sugestões
-            userInput.focus();
+            if (onboardingState !== 'READY') return;
             chatSuggestions.classList.remove('visible');
-            // Dispara o formulário automaticamente
+            userInput.value = chip.textContent;
             chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
         });
     });
 
-    // Eventos de clique nas sugestões mantidos...
+    async function processUserInput(value, displayLabel) {
+        const session = currentChatSession;
+        
+        // Adiciona a mensagem do usuário na tela
+        addMessage('user', displayLabel);
+        hideInput();
 
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        if (!isChatEnabled) return;
-
-        const message = userInput.value.trim();
-        if (!message) return;
-
-        // Adiciona mensagem do usuário
-        addMessage('user', message);
-        userInput.value = '';
-
-        // Adiciona indicador de digitação (Mocking the AI loading state)
-        const typingId = addTypingIndicator();
-
-        // Simula a chamada da API do LLM (Back-end e Lógica de Injeção)
-        try {
-            const response = await processLLMMessage(message, systemPrompt);
-            removeMessage(typingId);
-            addMessage('agent', response);
-        } catch (error) {
-            removeMessage(typingId);
-            addMessage('agent', `[Erro de Comunicação]: ${error}.`);
+        // Lógica da Máquina de Estados (Onboarding)
+        if (onboardingState === 'NAME') {
+            const typingId = addTypingIndicator();
+            try {
+                // Chama a API para extrair apenas o nome da frase
+                const extractedName = await extractNameViaLLM(value);
+                if (currentChatSession !== session) return;
+                removeMessage(typingId);
+                
+                // Se a IA falhar e voltar vazio, usamos o valor digitado como fallback
+                userData.nome = extractedName || value;
+            } catch (e) {
+                if (currentChatSession !== session) return;
+                removeMessage(typingId);
+                userData.nome = value; // Fallback
+            }
+            
+            onboardingState = 'DEGREE';
+            await displaySequentialMessages([`Muito prazer, **${userData.nome}**! Qual é a sua formação inicial (graduação)?`], session);
+            if (currentChatSession === session) showTextInput('Ex: Engenharia Ambiental');
+            return;
         }
-    });
+
+        if (onboardingState === 'DEGREE') {
+            userData.formacao = value;
+            onboardingState = 'YEAR';
+            await displaySequentialMessages([`Legal! E em que ano você concluiu a ${userData.formacao}?`], session);
+            if (currentChatSession === session) showTextInput('Ex: 2024', 'number');
+            return;
+        }
+
+        if (onboardingState === 'YEAR') {
+            userData.ano = value;
+            onboardingState = 'HAS_CREA';
+            await displaySequentialMessages([`Você já possui registro ativo no CREA?`], session);
+            if (currentChatSession === session) {
+                showInteractiveOptions([
+                    { label: 'Sim', value: 'Sim' },
+                    { label: 'Não', value: 'Não' }
+                ]);
+            }
+            return;
+        }
+
+        if (onboardingState === 'HAS_CREA') {
+            userData.hasCrea = value;
+            onboardingState = 'STATE';
+            await displaySequentialMessages([`Perfeito. Para finalizarmos o seu perfil, em qual estado (sigla) você busca a extensão de atribuição?`], session);
+            if (currentChatSession === session) showTextInput('Ex: SP, RJ, MG...');
+            return;
+        }
+
+        if (onboardingState === 'STATE') {
+            userData.estado = value.toUpperCase();
+            onboardingState = 'READY';
+            
+            // Inicia o atendimento da IA
+            await displaySequentialMessages([`Tudo certo! Como posso te ajudar com o seu processo hoje?`], session);
+            if (currentChatSession === session) {
+                showTextInput('Digite sua dúvida...');
+                chatSuggestions.classList.add('visible'); // Mostra as sugestões ao concluir o onboarding
+            }
+            return;
+        }
+
+        if (onboardingState === 'READY') {
+            // Fase da IA: Repassa para o backend
+            const typingId = addTypingIndicator();
+            try {
+                const response = await processLLMMessage(value);
+                if (currentChatSession !== session) return; 
+                removeMessage(typingId);
+
+                // Divide a resposta pelo delimitador ---MENSAGEM---
+                const parts = response
+                    .split('---MENSAGEM---')
+                    .map(p => p.trim())
+                    .filter(p => p.length > 0);
+
+                await displaySequentialMessages(parts, session);
+                if (currentChatSession === session) {
+                    showTextInput('Digite sua resposta...');
+                }
+            } catch (error) {
+                if (currentChatSession !== session) return;
+                removeMessage(typingId);
+                addMessage('agent', `**Erro de comunicação:** ${error}.`);
+                showTextInput('Tente novamente...');
+            }
+        }
+    }
 
     function addMessage(sender, text) {
         const messageDiv = document.createElement('div');
@@ -204,6 +239,33 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
         chatMessages.appendChild(messageDiv);
 
         scrollToBottom();
+        return messageDiv;
+    }
+
+    // Exibe um array de mensagens sequencialmente, com delay e typing indicator entre elas
+    async function displaySequentialMessages(parts, session) {
+        for (let i = 0; i < parts.length; i++) {
+            if (currentChatSession !== session) return; 
+
+            const chars = parts[i].length;
+            const delay = Math.min(2500, Math.max(800, chars * 12));
+
+            const typingId = addTypingIndicator();
+            await sleep(delay);
+            
+            if (currentChatSession !== session) return; 
+            
+            removeMessage(typingId);
+            addMessage('agent', parts[i]);
+
+            if (i < parts.length - 1) {
+                await sleep(400);
+            }
+        }
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     function addTypingIndicator() {
@@ -231,17 +293,25 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
     }
 
     function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        setTimeout(() => {
+            // Scroll do container do chat
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
+            // Caso a página inteira também role
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
 
-    // Função que faz o fetch para a sua API Flask (app.py)
-    async function processLLMMessage(userMessage, activeSystemPrompt) {
+    // Função que faz o fetch para a API Flask (app.py)
+    async function processLLMMessage(userMessage) {
         return new Promise(async (resolve, reject) => {
             console.log("=== ENVIANDO PARA O BACK-END FLASK ===");
-            console.log("User Message:\n", userMessage);
-
             try {
-                // Rota relativa: funciona perfeitamente tanto no Vercel quanto rodando localmente
                 const apiUrl = '/chat';
 
                 const response = await fetch(apiUrl, {
@@ -251,10 +321,11 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
                     },
                     body: JSON.stringify({
                         mensagem: userMessage,
-                        nome: nomeInput.value,
-                        estado: estadoInput.value,
-                        formacao: formacaoInput.value,
-                        ano: anoInput.value
+                        nome: userData.nome,
+                        estado: userData.estado,
+                        formacao: userData.formacao,
+                        ano: userData.ano,
+                        hasCrea: userData.hasCrea
                     })
                 });
 
@@ -276,6 +347,34 @@ Leia a pergunta atual do aluno, cruze com o Contexto do Aluno e com a sua Base d
                 resolve(data.resposta);
             } catch (error) {
                 console.error("Erro na comunicação com a API:", error);
+                reject(error.message);
+            }
+        });
+    }
+
+    // Função que faz o fetch para a extração do nome
+    async function extractNameViaLLM(userMessage) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const apiUrl = '/extract-name';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: userMessage })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.erro) {
+                    throw new Error(data.erro);
+                }
+
+                resolve(data.nome);
+            } catch (error) {
+                console.error("Erro na extração de nome:", error);
                 reject(error.message);
             }
         });

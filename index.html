@@ -21,89 +21,32 @@
         </header>
 
         <main class="main-content">
-            <!-- Modal de Perfil (Pop-up Centralizado) -->
-            <div id="profileModal" class="modal-overlay">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <img src="assets/Logo com slogan.svg" alt="Ambiental Pro" class="modal-logo">
-                        <p>Preencha seus dados para iniciar o atendimento</p>
-                    </div>
-                    
-                    <form id="contextForm" class="context-form">
-                        <div class="form-group">
-                            <label for="nome_aluno">Seu Nome</label>
-                            <input type="text" id="nome_aluno" name="nome_aluno" placeholder="Digite seu nome" required autocomplete="off">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="formacao_inicial">Formação Inicial (Graduação)</label>
-                            <input type="text" id="formacao_inicial" name="formacao_inicial" placeholder="Ex: Engenharia Ambiental" required autocomplete="off">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="ano_conclusao">Ano de Conclusão</label>
-                            <input type="text" id="ano_conclusao" name="ano_conclusao" placeholder="Ex: 2024" required autocomplete="off">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="estado_selecionado">Estado do Registro (CREA)</label>
-                            <input type="text" id="estado_selecionado" name="estado_selecionado" placeholder="Ex: SP" required autocomplete="off">
-                        </div>
-
-                        <button type="submit" class="btn-primary">Concluir <i class="fa-solid fa-arrow-right"></i></button>
-                    </form>
-                </div>
-            </div>
-
-            <section class="chat-section disabled" id="chatSection">
-                <div class="chat-overlay" id="chatOverlay">
-                    <!-- Overlay de segurança removido o cadeado e texto para dar foco ao modal -->
-                </div>
-                
+            <section class="chat-section" id="chatSection">
                 <div class="chat-container">
-                    <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="agent-info">
-                            <div class="agent-avatar">
-                                <i class="fa-solid fa-robot"></i>
-                                <span class="status-indicator"></span>
-                            </div>
-                            <div class="agent-details">
-                                <h3>Consultor Especialista CREA</h3>
-                                <span class="status-text">Pronto para ajudar</span>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn-download" id="btnDownload">
-                                <i class="fa-solid fa-cloud-arrow-down"></i> Docs para Download
-                            </button>
-                            <div class="dropdown-content" id="dropdownContent">
-                                <a href="Documentos/Docs para download/PPC GGSR.pdf" download="PPC GGSR.pdf" target="_blank">
-                                    <i class="fa-solid fa-file-pdf"></i> PPC GGSR
-                                </a>
-                                <a href="Documentos/Docs para download/Comprovante de Registro no CREA.pdf" download="Comprovante de Registro no CREA.pdf" target="_blank">
-                                    <i class="fa-solid fa-file-pdf"></i> Comprovante de Registro
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="chat-messages" id="chatMessages">
                         <!-- Mensagens aparecerão aqui -->
                     </div>
                     
                     <div class="chat-suggestions" id="chatSuggestions">
-                        <button class="suggestion-chip">Quais são as disciplinas e conteúdos exigidos por lei para a atribuição?</button>
+                        <button class="suggestion-chip">Quais são as disciplinas exigidas por lei para a atribuição?</button>
                         <button class="suggestion-chip">Qual é o passo a passo para dar entrada no processo no CREA?</button>
-                        <button class="suggestion-chip">A minha formação atual me permite assinar o georreferenciamento do INCRA?</button>
+                        <button class="suggestion-chip">Minha formação atual me permite assinar o INCRA?</button>
                     </div>
 
-                    <div class="chat-input-container">
-                        <form id="chatForm">
-                            <input type="text" id="userInput" placeholder="Digite sua dúvida sobre atribuição CREA..." disabled autocomplete="off">
-                            <button type="submit" id="sendBtn" disabled>
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </form>
+                    <!-- Container flexível que oculta/mostra a área de input -->
+                    <div class="dynamic-input-wrapper" id="dynamicInputWrapper" style="opacity: 0; pointer-events: none;">
+                        <div class="interactive-options" id="interactiveOptions" style="display: none;">
+                            <!-- Botões de Sim/Não serão injetados aqui -->
+                        </div>
+
+                        <div class="chat-input-container" id="chatInputContainer">
+                            <form id="chatForm">
+                                <input type="text" id="userInput" placeholder="Digite sua resposta..." autocomplete="off">
+                                <button type="submit" id="sendBtn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </section>
