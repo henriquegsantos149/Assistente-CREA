@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sender === 'agent') {
             messageDiv.innerHTML = `
-                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="agent-avatar"><img src="assets/Bot Pro.svg" alt="Agent"></div>
                 <div class="message-content">${parsedText}</div>
             `;
         } else {
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const msgContainer = document.createElement('div');
             msgContainer.classList.add('message-bubble', 'agent-message');
             msgContainer.innerHTML = `
-                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="agent-avatar"><img src="assets/Bot Pro.svg" alt="Agent"></div>
                 <div class="message-content">${marked.parse(parts[i])}</div>
             `;
             chatMessages.appendChild(msgContainer);
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = 'typing-' + Date.now();
         const typingHTML = `
             <div class="message-bubble agent-message" id="${id}">
-                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="agent-avatar"><img src="assets/Bot Pro.svg" alt="Agent"></div>
                 <div class="typing-indicator">
                     <span></span><span></span><span></span>
                 </div>
