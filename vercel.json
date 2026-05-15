@@ -16,6 +16,10 @@
       "dest": "/app.py"
     },
     {
+      "src": "/extract-name",
+      "dest": "/app.py"
+    },
+    {
       "handle": "filesystem"
     },
     {

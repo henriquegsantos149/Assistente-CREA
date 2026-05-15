@@ -136,18 +136,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Lógica da Máquina de Estados (Onboarding)
         if (onboardingState === 'NAME') {
             const typingId = addTypingIndicator();
+            
+            // Regex local rápida (fallback)
+            let regexName = value.replace(/^(eu sou o|eu sou a|sou o|sou a|sou|me chamo|meu nome é|meu nome e|olá|ola|bom dia|boa tarde|boa noite|pode me chamar de)[\s,]+/gi, '').trim();
+            // Capitaliza as palavras
+            regexName = regexName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
             try {
                 // Chama a API para extrair apenas o nome da frase
                 const extractedName = await extractNameViaLLM(value);
                 if (currentChatSession !== session) return;
                 removeMessage(typingId);
                 
-                // Se a IA falhar e voltar vazio, usamos o valor digitado como fallback
-                userData.nome = extractedName || value;
+                // Se a IA falhar e voltar vazio, usamos o valor do regex
+                userData.nome = extractedName || regexName || value;
             } catch (e) {
                 if (currentChatSession !== session) return;
                 removeMessage(typingId);
-                userData.nome = value; // Fallback
+                userData.nome = regexName || value; // Fallback se a API der erro 404
             }
             
             onboardingState = 'DEGREE';
