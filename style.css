@@ -144,16 +144,29 @@ body {
     border-radius: 10px;
 }
 
-.message {
+.message-bubble {
     max-width: 90%;
     width: fit-content;
     display: flex;
+    gap: 12px;
     animation: messageEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes messageEnter {
     from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+.agent-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .agent-message {
