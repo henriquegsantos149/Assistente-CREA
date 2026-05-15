@@ -98,7 +98,13 @@ def extract_name():
 
         if not resposta_texto or len(resposta_texto.split()) > 3 or "meu nome" in resposta_texto.lower() or "me chamo" in resposta_texto.lower():
             # Fallback robusto usando Regex caso a IA falhe (Rate limit ou alucinação)
-            limpo = re.sub(r"^(eu sou o|eu sou a|sou o|sou a|sou|me chamo|meu nome [eé]|ol[aá]|bom dia|boa tarde|boa noite|pode me chamar de)[\s,]*", "", mensagem_aluno, flags=re.IGNORECASE).strip()
+            limpo = mensagem_aluno
+            while True:
+                novo_limpo = re.sub(r"^(eu sou o|eu sou a|eu me chamo|sou o|sou a|sou|me chamo|meu nome [eé]|o meu nome [eé]|ol[aá]|ola|bom dia|boa tarde|boa noite|pode me chamar de)[\s,]+", "", limpo, flags=re.IGNORECASE).strip()
+                if novo_limpo == limpo:
+                    break
+                limpo = novo_limpo
+            
             # Pega até os 2 primeiros nomes
             palavras = limpo.split()
             if palavras:

@@ -138,9 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const typingId = addTypingIndicator();
             
             // Regex local rápida (fallback)
-            let regexName = value.replace(/^(eu sou o|eu sou a|sou o|sou a|sou|me chamo|meu nome é|meu nome e|olá|ola|bom dia|boa tarde|boa noite|pode me chamar de)[\s,]+/gi, '').trim();
+            let regexName = value;
+            while (true) {
+                let newName = regexName.replace(/^(eu sou o|eu sou a|eu me chamo|sou o|sou a|sou|me chamo|meu nome é|meu nome e|o meu nome é|o meu nome e|olá|ola|bom dia|boa tarde|boa noite|pode me chamar de)[\s,]+/gi, '').trim();
+                if (newName === regexName) break;
+                regexName = newName;
+            }
+            // Pega apenas o primeiro ou os dois primeiros nomes
+            let nameParts = regexName.split(' ');
+            if (nameParts.length > 2) nameParts = nameParts.slice(0, 2);
             // Capitaliza as palavras
-            regexName = regexName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            regexName = nameParts.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
             try {
                 // Chama a API para extrair apenas o nome da frase
