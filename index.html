@@ -14,9 +14,24 @@
         <header class="app-header">
             <div class="header-content">
                 <img src="assets/Logo com slogan.svg" alt="Ambiental Pro" class="header-logo">
-                <button id="restartBtn" class="restart-btn">
-                    <i class="fa-solid fa-rotate-right"></i> Recomeçar
-                </button>
+                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="dropdown">
+                        <button class="btn-download" id="btnDownload">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Docs
+                        </button>
+                        <div class="dropdown-content" id="dropdownContent">
+                            <a href="Documentos/Docs para download/PPC GGSR.pdf" download="PPC GGSR.pdf" target="_blank">
+                                <i class="fa-solid fa-file-pdf"></i> PPC GGSR
+                            </a>
+                            <a href="Documentos/Docs para download/Comprovante de Registro no CREA.pdf" download="Comprovante de Registro no CREA.pdf" target="_blank">
+                                <i class="fa-solid fa-file-pdf"></i> Comprovante de Registro
+                            </a>
+                        </div>
+                    </div>
+                    <button id="restartBtn" class="restart-btn">
+                        <i class="fa-solid fa-rotate-right"></i> Recomeçar
+                    </button>
+                </div>
             </div>
         </header>
 

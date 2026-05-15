@@ -165,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (onboardingState === 'DEGREE') {
             userData.formacao = value;
             onboardingState = 'YEAR';
-            await displaySequentialMessages([`Legal! E em que ano você concluiu a ${userData.formacao}?`], session);
-            if (currentChatSession === session) showTextInput('Ex: 2024', 'number');
+            await displaySequentialMessages([`Legal! E em que ano você concluiu essa sua graduação?`], session);
+            if (currentChatSession === session) showTextInput('Ex: 2015', 'number');
             return;
         }
 
@@ -233,17 +233,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addMessage(sender, text) {
         const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', `${sender}-message`);
+        messageDiv.classList.add('message-bubble', `${sender}-message`);
 
-        const contentDiv = document.createElement('div');
-        contentDiv.classList.add('message-content');
+        const parsedText = marked.parse(text);
 
-        // Renderiza o Markdown vindo da IA para um HTML bonito usando o Marked.js
-        contentDiv.innerHTML = marked.parse(text);
+        if (sender === 'agent') {
+            messageDiv.innerHTML = `
+                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="message-content">${parsedText}</div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="message-content">${parsedText}</div>
+            `;
+        }
 
-        messageDiv.appendChild(contentDiv);
         chatMessages.appendChild(messageDiv);
-
         scrollToBottom();
         return messageDiv;
     }
@@ -262,7 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentChatSession !== session) return; 
             
             removeMessage(typingId);
-            addMessage('agent', parts[i]);
+            
+            // Cria o elemento da mensagem com o avatar personalizado
+            const msgContainer = document.createElement('div');
+            msgContainer.classList.add('message-bubble', 'agent-message');
+            msgContainer.innerHTML = `
+                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="message-content">${marked.parse(parts[i])}</div>
+            `;
+            chatMessages.appendChild(msgContainer);
+            scrollToBottom();
 
             if (i < parts.length - 1) {
                 await sleep(400);
@@ -274,19 +288,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    // Utilitário para adicionar o indicador de digitação da IA
     function addTypingIndicator() {
         const id = 'typing-' + Date.now();
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', 'agent-message');
-        messageDiv.id = id;
-
-        const contentDiv = document.createElement('div');
-        contentDiv.classList.add('message-content', 'typing-indicator');
-        contentDiv.innerHTML = '<span></span><span></span><span></span>';
-
-        messageDiv.appendChild(contentDiv);
-        chatMessages.appendChild(messageDiv);
-
+        const typingHTML = `
+            <div class="message-bubble agent-message" id="${id}">
+                <div class="agent-avatar"><img src="assets/Bot Pro.png" alt="Agent"></div>
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', typingHTML);
         scrollToBottom();
         return id;
     }
