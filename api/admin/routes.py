@@ -243,11 +243,18 @@ def get_rag_files():
         if not agent_table:
             return jsonify({"erro": "Agente/Tabela não informada"}), 400
 
+        # Garantir que o .env está carregado caso o flask não tenha rodado da raiz
+        from dotenv import load_dotenv
+        env_path = Path(__file__).parent.parent.parent / '.env'
+        load_dotenv(dotenv_path=env_path)
+
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_KEY")
         
         if not supabase_url or not supabase_key:
             return jsonify({"erro": "Credenciais Supabase não configuradas no servidor."}), 500
+
+        supabase_url = supabase_url.rstrip('/')
 
         headers = {
             "apikey": supabase_key,

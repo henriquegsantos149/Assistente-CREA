@@ -555,7 +555,9 @@
                 
                 listContainer.innerHTML = ''; // Limpa a lista
                 
-                if (data.files && data.files.length > 0) {
+                if (data.erro) {
+                    listContainer.innerHTML = `<p style="color: #FCA5A5; font-size: 0.9rem;">Erro no servidor: ${data.erro}</p>`;
+                } else if (data.files && data.files.length > 0) {
                     data.files.forEach(filename => {
                         const item = document.createElement('div');
                         item.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-sm);';
