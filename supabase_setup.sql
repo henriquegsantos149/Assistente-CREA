@@ -45,17 +45,17 @@ $$;
 -- TABELAS PARA OUTROS AGENTES
 -- =================================================================================
 
--- Agente INCRA
-create table if not exists documentos_incra (
+-- Agente: Expert de Cursos
+create table if not exists documentos_cursos (
   id bigserial primary key,
   content text not null,
   metadata jsonb,
   embedding vector(384)
 );
 
-create index on documentos_incra using hnsw (embedding vector_cosine_ops);
+create index on documentos_cursos using hnsw (embedding vector_cosine_ops);
 
-create or replace function match_documentos_incra (
+create or replace function match_documentos_cursos (
   query_embedding vector(384),
   match_threshold float,
   match_count int
@@ -63,23 +63,23 @@ create or replace function match_documentos_incra (
 returns table (id bigint, content text, metadata jsonb, similarity float)
 language sql stable as $$
   select id, content, metadata, 1 - (embedding <=> query_embedding) as similarity
-  from documentos_incra
+  from documentos_cursos
   where 1 - (embedding <=> query_embedding) > match_threshold
   order by embedding <=> query_embedding
   limit match_count;
 $$;
 
--- Agente ADM
-create table if not exists documentos_adm (
+-- Agente: Expert de Portfólio
+create table if not exists documentos_portfolio (
   id bigserial primary key,
   content text not null,
   metadata jsonb,
   embedding vector(384)
 );
 
-create index on documentos_adm using hnsw (embedding vector_cosine_ops);
+create index on documentos_portfolio using hnsw (embedding vector_cosine_ops);
 
-create or replace function match_documentos_adm (
+create or replace function match_documentos_portfolio (
   query_embedding vector(384),
   match_threshold float,
   match_count int
@@ -87,7 +87,31 @@ create or replace function match_documentos_adm (
 returns table (id bigint, content text, metadata jsonb, similarity float)
 language sql stable as $$
   select id, content, metadata, 1 - (embedding <=> query_embedding) as similarity
-  from documentos_adm
+  from documentos_portfolio
+  where 1 - (embedding <=> query_embedding) > match_threshold
+  order by embedding <=> query_embedding
+  limit match_count;
+$$;
+
+-- Agente: Secretaria Acadêmica
+create table if not exists documentos_secretaria (
+  id bigserial primary key,
+  content text not null,
+  metadata jsonb,
+  embedding vector(384)
+);
+
+create index on documentos_secretaria using hnsw (embedding vector_cosine_ops);
+
+create or replace function match_documentos_secretaria (
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int
+)
+returns table (id bigint, content text, metadata jsonb, similarity float)
+language sql stable as $$
+  select id, content, metadata, 1 - (embedding <=> query_embedding) as similarity
+  from documentos_secretaria
   where 1 - (embedding <=> query_embedding) > match_threshold
   order by embedding <=> query_embedding
   limit match_count;

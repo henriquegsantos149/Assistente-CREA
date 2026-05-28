@@ -284,9 +284,9 @@
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">1. Selecione o Agente de Destino:</label>
                             <select id="ragAgentSelect" required style="background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; appearance: auto;">
-                                <option value="documentos_crea">Agente: Assistente CREA</option>
-                                <option value="documentos_incra">Agente: Assistente INCRA</option>
-                                <option value="documentos_adm">Agente: ADM Interno</option>
+                                <option value="documentos_cursos">Agente: Expert de Cursos</option>
+                                <option value="documentos_portfolio">Agente: Expert de Portfólio</option>
+                                <option value="documentos_secretaria">Agente: Secretaria Acadêmica</option>
                             </select>
                         </div>
                         
@@ -395,17 +395,19 @@
         // Buscar modelos OpenRouter para preencher o select
         async function carregarModelosOpenRouter(modeloAtual) {
             try {
-                const res = await fetch('/api/admin/openrouter-models');
+                // Busca diretamente na API do OpenRouter para evitar problemas se o dashboard não estiver na mesma rota do backend
+                const res = await fetch('https://openrouter.ai/api/v1/models');
                 const data = await res.json();
                 
-                if (data.models) {
+                if (data.data) {
                     const select = document.getElementById('modelSelect');
                     
                     // Manter apenas a primeira opção ("Modelos Gratuitos")
                     select.innerHTML = '<option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option>';
                     
-                    // Adicionar modelos da OpenRouter
-                    data.models.forEach(m => {
+                    // Ordenar por nome e adicionar modelos da OpenRouter
+                    data.data.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
+                    data.data.forEach(m => {
                         const opt = document.createElement('option');
                         opt.value = m.id;
                         opt.textContent = m.name || m.id;
@@ -419,6 +421,7 @@
                 }
             } catch(e) {
                 console.error("Erro ao carregar modelos OpenRouter", e);
+                document.getElementById('modelSelect').innerHTML = '<option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option><option disabled>Erro ao carregar modelos.</option>';
             }
         }
 
@@ -452,9 +455,9 @@
             if (selectValue === 'free-fallback') {
                 modelsArray = [
                     "meta-llama/llama-3.3-70b-instruct:free",
-                    "google/gemma-3-27b-it:free",
-                    "google/gemma-3-12b-it:free",
-                    "mistralai/mistral-7b-instruct:free"
+                    "google/gemma-4-31b-it:free",
+                    "qwen/qwen3-coder:free",
+                    "nousresearch/hermes-3-llama-3.1-405b:free"
                 ];
             } else {
                 modelsArray = [selectValue]; // Apenas 1 modelo selecionado

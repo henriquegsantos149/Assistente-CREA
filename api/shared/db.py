@@ -146,7 +146,7 @@ def _sqlite_obter_todas_mensagens() -> list:
     try:
         # Pega as mensagens com os nomes dos usuários da sessão
         rows = conn.execute('''
-            SELECT m.created_at, s.user_nome, m.sender, m.content
+            SELECT m.created_at as timestamp, s.user_nome, m.sender as role, m.content, m.sessao_id as session_id
             FROM mensagens m
             JOIN sessoes s ON m.sessao_id = s.id
             ORDER BY m.created_at DESC
