@@ -288,6 +288,7 @@
                                 <option value="documentos_cursos">Agente: Expert de Cursos</option>
                                 <option value="documentos_portfolio">Agente: Expert de Portfólio Geo</option>
                                 <option value="documentos_secretaria">Agente: Secretaria Acadêmica</option>
+                                <option value="documentos_adm">Agente: ADM (Insights)</option>
                             </select>
                         </div>
                         
@@ -296,11 +297,23 @@
                             <input type="file" id="ragFile" accept=".pdf" required style="background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 1.5rem; color: var(--text-primary); cursor: pointer;">
                         </div>
                         
-                        <button type="submit" id="btnUploadRAG" class="primary-btn" style="width: fit-content; margin-top: 0.5rem;">
+                        <button type="submit" id="btnUploadRag" class="primary-btn" style="align-self: flex-start;">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Iniciar Vetorização
                         </button>
-                        <div id="ragStatus" style="font-size: 0.9rem; color: var(--accent-green); display: none;">Processando, aguarde...</div>
+                        <p id="ragStatus" style="display: none; margin-top: 1rem; font-size: 0.95rem; font-weight: 500;"></p>
                     </form>
+
+                    <!-- Lista de arquivos já vetorizados no agente -->
+                    <div id="ragFilesContainer" style="margin-top: 2rem; background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem;">
+                        <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-brain" style="color: var(--accent-blue);"></i> Base de Conhecimento Atual
+                        </h3>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">Arquivos que este agente já estudou e utiliza como contexto:</p>
+                        
+                        <div id="ragFilesList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Selecione um agente para ver os arquivos.</p>
+                        </div>
+                    </div>
                 </div>
             </div> <!-- Fim tab-rag -->
 
@@ -488,8 +501,8 @@
             e.preventDefault();
             const fileInput = document.getElementById('ragFile');
             const agentSelect = document.getElementById('ragAgentSelect');
-            const btn = document.getElementById('btnUploadRAG');
-            const status = document.getElementById('ragStatus');
+            const btn = document.getElementById('btnUploadRag');
+            const ragStatus = document.getElementById('ragStatus');
 
             if (!fileInput.files[0]) return;
 
@@ -498,10 +511,10 @@
             formData.append('agentTable', agentSelect.value);
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando PDF...';
-            status.style.display = 'block';
-            status.textContent = "Lendo e vetorizando o documento... Isso pode levar alguns minutos.";
-            status.style.color = "var(--text-secondary)";
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processando... Isso pode demorar';
+            ragStatus.style.display = 'block';
+            ragStatus.style.color = 'var(--text-secondary)';
+            ragStatus.textContent = 'Enviando arquivo e extraindo textos...';
 
             try {
                 const res = await fetch('/api/admin/upload-rag', {
@@ -509,23 +522,59 @@
                     body: formData
                 });
                 const data = await res.json();
-                
-                if (res.ok) {
-                    status.textContent = "✅ Vetorização concluída com sucesso!";
-                    status.style.color = "var(--accent-green)";
-                    fileInput.value = ""; // limpa
+
+                if (data.status === 'sucesso') {
+                    ragStatus.style.color = 'var(--accent-green)';
+                    ragStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Arquivo vetorizado e inserido na base com sucesso!';
+                    document.getElementById('ragFile').value = '';
+                    // Atualiza a lista de arquivos para refletir o novo documento
+                    carregarArquivosRAG();
                 } else {
-                    status.textContent = "❌ Erro: " + (data.erro || "Falha na vetorização");
-                    status.style.color = "#EF4444";
+                    ragStatus.style.color = '#FCA5A5';
+                    ragStatus.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Erro: ' + (data.erro || 'Falha na vetorização');
                 }
-            } catch (err) {
-                status.textContent = "❌ Erro de conexão ao enviar PDF.";
-                status.style.color = "#EF4444";
+            } catch(e) {
+                ragStatus.style.color = '#FCA5A5';
+                ragStatus.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Erro de rede ao tentar vetorizar o arquivo.';
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Iniciar Vetorização';
             }
         });
+
+        // Função para carregar lista de arquivos vetorizados
+        async function carregarArquivosRAG() {
+            const listContainer = document.getElementById('ragFilesList');
+            const agent = document.getElementById('ragAgentSelect').value;
+            
+            listContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;"><i class="fa-solid fa-spinner fa-spin"></i> Carregando arquivos...</p>';
+            
+            try {
+                const res = await fetch('/api/admin/rag-files?agentTable=' + encodeURIComponent(agent));
+                const data = await res.json();
+                
+                listContainer.innerHTML = ''; // Limpa a lista
+                
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(filename => {
+                        const item = document.createElement('div');
+                        item.style.cssText = 'display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-sm);';
+                        item.innerHTML = `
+                            <i class="fa-solid fa-file-pdf" style="color: #e25555; font-size: 1.2rem;"></i>
+                            <span style="font-size: 0.95rem; color: var(--text-primary); word-break: break-all;">${filename}</span>
+                        `;
+                        listContainer.appendChild(item);
+                    });
+                } else {
+                    listContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Nenhum documento encontrado no cérebro deste agente.</p>';
+                }
+            } catch (e) {
+                listContainer.innerHTML = '<p style="color: #FCA5A5; font-size: 0.9rem;">Erro ao carregar lista de arquivos.</p>';
+            }
+        }
+
+        // Ouvinte para atualizar a lista quando o usuário trocar o dropdown do agente
+        document.getElementById('ragAgentSelect').addEventListener('change', carregarArquivosRAG);
 
         // --- HISTÓRICO DE CHAT ---
         let currentSessoes = [];
@@ -593,6 +642,7 @@
         // Init
         carregarConfiguracoes();
         carregarHistorico();
+        carregarArquivosRAG();
     </script>
 </body>
 </html>

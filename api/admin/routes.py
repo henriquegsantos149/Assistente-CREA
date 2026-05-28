@@ -234,3 +234,47 @@ def get_chat_history():
         
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
+
+@admin_bp.route('/api/admin/rag-files', methods=['GET'])
+def get_rag_files():
+    """Retorna a lista de arquivos únicos que já foram vetorizados para um dado agente."""
+    try:
+        agent_table = request.args.get('agentTable')
+        if not agent_table:
+            return jsonify({"erro": "Agente/Tabela não informada"}), 400
+
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_KEY")
+        
+        if not supabase_url or not supabase_key:
+            return jsonify({"erro": "Credenciais Supabase não configuradas no servidor."}), 500
+
+        headers = {
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json"
+        }
+        
+        # Busca apenas os metadados
+        url = f"{supabase_url}/rest/v1/{agent_table}?select=metadata"
+        res = requests.get(url, headers=headers, timeout=10)
+        
+        if res.status_code == 200:
+            data = res.json()
+            unique_files = set()
+            for row in data:
+                metadata = row.get("metadata", {})
+                if isinstance(metadata, dict):
+                    filename = metadata.get("file")
+                    if filename:
+                        unique_files.add(filename)
+            
+            return jsonify({"files": sorted(list(unique_files))}), 200
+        else:
+            # Pode ser que a tabela não exista ainda
+            if res.status_code == 404 or "does not exist" in res.text:
+                return jsonify({"files": []}), 200
+            return jsonify({"erro": f"Erro do Supabase: {res.text}"}), 500
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
