@@ -1068,3 +1068,10 @@ input:checked + .theme-slider::before {
     .chat-messages { padding: 1rem; }
     .dynamic-input-wrapper { padding: 1rem; }
 }
+
+/* ================================================
+   ADAPTIVE LOGO (LIGHT MODE SUPPORT)
+   ================================================ */
+[data-theme="light"] .adaptive-logo {
+    filter: invert(1) hue-rotate(180deg) brightness(1.1);
+}
