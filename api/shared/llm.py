@@ -17,16 +17,18 @@ def get_modelos_fallback():
                 config = json.load(f)
                 return config.get("models", [
                     "meta-llama/llama-3.3-70b-instruct:free",
-                    "google/gemma-3-27b-it:free"
+                    "google/gemma-2-9b-it:free",
+                    "nousresearch/hermes-3-llama-3.1-405b:free",
+                    "qwen/qwen-2.5-coder-32b-instruct:free"
                 ])
     except Exception as e:
         logger.error(f"Erro ao carregar config.json: {e}")
         
     return [
         "meta-llama/llama-3.3-70b-instruct:free",
-        "google/gemma-3-27b-it:free",
-        "google/gemma-3-12b-it:free",
-        "mistralai/mistral-7b-instruct:free",
+        "google/gemma-2-9b-it:free",
+        "nousresearch/hermes-3-llama-3.1-405b:free",
+        "qwen/qwen-2.5-coder-32b-instruct:free"
     ]
 
 
