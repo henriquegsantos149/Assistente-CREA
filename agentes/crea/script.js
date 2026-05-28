@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideInput();
 
         const welcomeParts = [
-            `Olá, seja muito bem-vindo(a)! Eu sou o **Agente Pro**, um assistente com IA disponível 24h por dia para te auxiliar em sua carreira profissional.`,
+            `Olá, seja muito bem-vindo(a)! Eu sou o **Assistente CREA**, um assistente com IA disponível 24h por dia para te auxiliar no processo de obtenção da extensão de atribuição no CREA.`,
             `Para começar, gostaria de saber o seu nome.`
         ];
 

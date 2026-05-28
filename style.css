@@ -176,6 +176,8 @@ body.hub-theme .app-container {
 .app-header {
     text-align: center;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1000;
     
     /* Animação moderna sem keyframes usando starting-style */
     opacity: 1;
@@ -239,9 +241,10 @@ body.hub-theme .header-content {
     font-size: clamp(3rem, 6vw, 4.5rem);
     letter-spacing: 0.03em;
     margin-top: 1rem;
-    line-height: 1;
+    line-height: 1.15;
     text-wrap: balance; /* Modern CSS */
-    
+    padding-top: 0.2em; /* Prevenir corte de acentos no topo */
+
     background: linear-gradient(135deg, #FFF 10%, var(--accent-green) 70%, var(--accent-blue) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -255,7 +258,8 @@ body.hub-theme .header-content {
     background-clip: text;
 }
 
-[data-theme="light"] .header-logo {
+[data-theme="light"] .header-logo,
+[data-theme="light"] .sidebar-logo {
     filter: invert(1) hue-rotate(180deg) brightness(0.2);
 }
 
@@ -352,7 +356,7 @@ body.hub-theme .header-content {
 .agent-icon {
     width: 64px;
     height: 64px;
-    border-radius: var(--radius-mixed-rev);
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -608,7 +612,7 @@ dialog.modal-overlay[open] .modal-content {
 .agent-avatar {
     width: 36px;
     height: 36px;
-    border-radius: var(--radius-mixed-rev);
+    border-radius: var(--radius-full);
     background: var(--bg-surface-light);
     border: 1px solid var(--border-hover);
     display: flex;
@@ -750,7 +754,7 @@ dialog.modal-overlay[open] .modal-content {
     width: 3.25rem;
     height: 3.25rem;
     flex-shrink: 0;
-    border-radius: var(--radius-mixed);
+    border-radius: var(--radius-md);
     background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
     color: var(--bg-main);
     border: none;
@@ -845,6 +849,27 @@ dialog.modal-overlay[open] .modal-content {
     box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-blue) 20%, transparent);
 }
 
+.primary-btn {
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    color: var(--bg-main);
+    border: none;
+    padding: 0.85rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all var(--transition-spring);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
 /* ================================================
    COMPONENTES DE UI AVANÇADOS (Toggle & Float Btn)
    ================================================ */
@@ -920,8 +945,8 @@ input:checked + .theme-slider::before {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -929,7 +954,7 @@ input:checked + .theme-slider::before {
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     box-shadow: var(--shadow-md);
     transition: all var(--transition-spring);
     z-index: 999;
@@ -993,7 +1018,7 @@ input:checked + .theme-slider::before {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    padding: 0.5rem 0;
+    padding: 0.5rem 1.5rem;
     
     opacity: 0;
     visibility: hidden;

@@ -1,6 +1,10 @@
 import csv
 import io
 import json
+import requests
+import os
+import subprocess
+from werkzeug.utils import secure_filename
 from flask import Blueprint, jsonify, Response, request
 from api.shared.db import obter_todas_mensagens
 from api.shared.llm import call_openrouter
@@ -123,5 +127,110 @@ def save_config():
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(dados, f, indent=2, ensure_ascii=False)
         return jsonify({"status": "sucesso"}), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@admin_bp.route('/api/admin/openrouter-models', methods=['GET'])
+def list_openrouter_models():
+    """Busca a lista de modelos atualizados da OpenRouter"""
+    try:
+        # A API da OpenRouter para listar modelos é aberta, não precisa de chave,
+        # mas vamos passar para evitar qualquer bloqueio
+        headers = {}
+        # Opcional: Se quiser usar a chave:
+        # from api.shared.llm import get_openrouter_key
+        # key = get_openrouter_key()
+        # if key: headers['Authorization'] = f'Bearer {key}'
+        
+        response = requests.get('https://openrouter.ai/api/v1/models', headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            models = []
+            for m in data.get('data', []):
+                models.append({
+                    "id": m.get('id'),
+                    "name": m.get('name')
+                })
+            # Ordenar por nome
+            models.sort(key=lambda x: x['name'])
+            return jsonify({"models": models})
+        else:
+            return jsonify({"erro": "Falha ao buscar modelos"}), 500
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@admin_bp.route('/api/admin/upload-rag', methods=['POST'])
+def upload_rag_pdf():
+    """Recebe um PDF e processa a vetorização via script Node.js."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({"erro": "Nenhum arquivo enviado"}), 400
+        
+        file = request.files['file']
+        agent_table = request.form.get('agentTable')
+
+        if file.filename == '':
+            return jsonify({"erro": "Nome do arquivo vazio"}), 400
+            
+        if not agent_table:
+            return jsonify({"erro": "Agente/Tabela não informada"}), 400
+
+        # Salvar arquivo temporariamente
+        filename = secure_filename(file.filename)
+        # Vamos salvar na pasta 'Documentos'
+        upload_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Documentos')
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+
+        # Chamar script Node
+        node_script = os.path.join(os.path.dirname(__file__), '..', '..', 'scripts', 'vetorizador', 'processar_pdf.mjs')
+        
+        # Como o subprocess é bloqueante e pode demorar, vamos aguardar para ter o resultado.
+        # Em produção, idealmente seria async/fila, mas para dashboard admin está OK.
+        result = subprocess.run(['node', node_script, filepath, agent_table], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            return jsonify({"status": "sucesso", "log": result.stdout})
+        else:
+            return jsonify({"erro": "Erro na vetorização", "detalhes": result.stderr}), 500
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@admin_bp.route('/api/admin/chat-history', methods=['GET'])
+def get_chat_history():
+    """Retorna as sessões mais recentes agrupadas por ID."""
+    try:
+        mensagens = obter_todas_mensagens()
+        
+        # Agrupar por sessao
+        sessoes = {}
+        for msg in mensagens:
+            sid = msg.get('session_id')
+            if sid not in sessoes:
+                sessoes[sid] = {
+                    "session_id": sid,
+                    "data": msg.get('timestamp'),
+                    "usuario": "Usuário Anônimo",
+                    "primeira_pergunta": "",
+                    "mensagens": []
+                }
+            sessoes[sid]['mensagens'].append(msg)
+            
+            # Tentar achar a primeira pergunta de usuário
+            if msg.get('role') == 'user' and not sessoes[sid]['primeira_pergunta']:
+                sessoes[sid]['primeira_pergunta'] = msg.get('content')
+                
+        # Organizar numa lista
+        lista_sessoes = list(sessoes.values())
+        
+        # Ordenar por data decrescente
+        lista_sessoes.sort(key=lambda x: x['data'], reverse=True)
+        
+        # Limitar as 15 últimas para não pesar
+        return jsonify({"sessoes": lista_sessoes[:15]}), 200
+        
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

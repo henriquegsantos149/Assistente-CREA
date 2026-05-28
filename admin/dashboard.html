@@ -105,6 +105,82 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+
+        /* Modal e Tabela do Histórico */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .history-table th, .history-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .history-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .history-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+        }
+        .chat-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .chat-modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .chat-modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .chat-bubble {
+            padding: 1rem;
+            border-radius: var(--radius-mixed);
+            max-width: 85%;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .bubble-user {
+            background: var(--bg-surface-light);
+            border: 1px solid var(--border-color);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .bubble-agent {
+            background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent-green) 30%, transparent);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
     </style>
 </head>
 <body class="hub-theme">
@@ -116,10 +192,10 @@
             </div>
 
             <nav class="admin-nav">
-                <a href="#" class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
-                <a href="#" class="nav-item"><i class="fa-solid fa-robot"></i> Gestão de Agentes</a>
-                <a href="#" class="nav-item"><i class="fa-solid fa-database"></i> Bases de Conhecimento (RAG)</a>
-                <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Chats</a>
+                <a href="#" id="nav-dashboard" class="nav-item active" onclick="switchTab('dashboard', event)"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="#" id="nav-agentes" class="nav-item" onclick="switchTab('agentes', event)"><i class="fa-solid fa-robot"></i> Gestão de Agentes</a>
+                <a href="#" id="nav-rag" class="nav-item" onclick="switchTab('rag', event)"><i class="fa-solid fa-database"></i> Bases de Conhecimento (RAG)</a>
+                <a href="#" id="nav-history" class="nav-item" onclick="switchTab('history', event)"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Chats</a>
             </nav>
 
             <a href="../index.html" class="nav-item" style="margin-top: auto; color: #EF4444;" onclick="sessionStorage.removeItem('adminAuth')">
@@ -151,7 +227,8 @@
                 </div>
             </header>
 
-            <div class="stat-grid" style="margin-bottom: 3rem;">
+            <div id="tab-dashboard" class="tab-content" style="display: block;">
+                <div class="stat-grid" style="margin-bottom: 3rem;">
                 <div class="stat-card">
                     <span class="stat-label">Total de Agentes</span>
                     <span class="stat-value">04</span>
@@ -162,7 +239,7 @@
                 </div>
                 <div class="stat-card" style="justify-content: center; align-items: flex-start;">
                     <span class="stat-label" style="margin-bottom: 0.5rem;">Exportar Interações</span>
-                    <button onclick="exportarCSV()" class="agent-button" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                    <button onclick="exportarCSV()" class="primary-btn" style="width: 100%; display: flex; justify-content: center; align-items: center;">
                         <i class="fa-solid fa-file-csv"></i> Baixar Planilha (CSV)
                     </button>
                 </div>
@@ -171,26 +248,94 @@
             <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Analista de Dados IA (Insights)</h2>
             <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
                 <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">A IA irá varrer as perguntas recentes dos alunos e extrair padrões, tendências e dúvidas comuns.</p>
-                <button id="btnInsights" onclick="gerarInsights()" class="agent-button" style="background: var(--text-primary); color: var(--bg-main); width: fit-content; margin-bottom: 1.5rem;">
+                <button id="btnInsights" onclick="gerarInsights()" class="primary-btn" style="width: fit-content; margin-bottom: 1.5rem;">
                     <i class="fa-solid fa-brain"></i> Gerar Relatório de Insights
                 </button>
                 <div id="insightResult" style="display: none; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); color: var(--text-primary); white-space: pre-wrap; font-family: 'Outfit', sans-serif; line-height: 1.6;"></div>
             </div>
+            </div> <!-- Fim tab-dashboard -->
 
-            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Configuração de Modelos LLM</h2>
-            <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
-                <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Gerencie a lista de modelos (OpenRouter) que os agentes utilizarão.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
-                    <label style="color: var(--text-primary); font-weight: 500;">Lista de Modelos de Fallback (Um por linha):</label>
-                    <textarea id="modelsList" rows="5" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; color: var(--text-primary); font-family: monospace; resize: vertical;"></textarea>
+            <div id="tab-agentes" class="tab-content" style="display: none; animation: fadeInDown 0.4s ease forwards;">
+                <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Gestão de Agentes &amp; Modelos</h2>
+                <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
+                    <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Selecione o modelo que alimentará os Assistentes (comunicando com a OpenRouter).</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; max-width: 500px;">
+                        <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">Modelo Principal do Agente</label>
+                        <select id="modelSelect" style="background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; appearance: auto;">
+                            <option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option>
+                            <option disabled>Carregando modelos da OpenRouter...</option>
+                        </select>
+                        <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">A opção "Modelos Gratuitos" alternará automaticamente entre o Llama 3, Gemma e Mistral caso um deles falhe.</small>
+                    </div>
+                    
+                    <button onclick="salvarConfiguracoes()" class="primary-btn" style="width: fit-content;">
+                        <i class="fa-solid fa-save"></i> Salvar Configurações
+                    </button>
                 </div>
-                
-                <button onclick="salvarConfiguracoes()" class="agent-button" style="width: fit-content;">
-                    <i class="fa-solid fa-save"></i> Salvar Configurações
-                </button>
-            </div>
+            </div> <!-- Fim tab-agentes -->
+
+            <div id="tab-rag" class="tab-content" style="display: none; animation: fadeInDown 0.4s ease forwards;">
+                <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Bases de Conhecimento (RAG)</h2>
+                <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
+                    <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Adicione PDFs para ensinar novas leis e regras aos seus agentes.</p>
+                    
+                    <form id="formRAG" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 500px;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">1. Selecione o Agente de Destino:</label>
+                            <select id="ragAgentSelect" required style="background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; appearance: auto;">
+                                <option value="documentos_crea">Agente: Assistente CREA</option>
+                                <option value="documentos_incra">Agente: Assistente INCRA</option>
+                                <option value="documentos_adm">Agente: ADM Interno</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">2. Selecione o Arquivo (Somente PDF):</label>
+                            <input type="file" id="ragFile" accept=".pdf" required style="background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 1.5rem; color: var(--text-primary); cursor: pointer;">
+                        </div>
+                        
+                        <button type="submit" id="btnUploadRAG" class="primary-btn" style="width: fit-content; margin-top: 0.5rem;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Iniciar Vetorização
+                        </button>
+                        <div id="ragStatus" style="font-size: 0.9rem; color: var(--accent-green); display: none;">Processando, aguarde...</div>
+                    </form>
+                </div>
+            </div> <!-- Fim tab-rag -->
+
+            <div id="tab-history" class="tab-content" style="display: none; animation: fadeInDown 0.4s ease forwards;">
+                <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Histórico de Chats</h2>
+                <div class="stat-card" style="padding: 1.5rem; overflow-x: auto;">
+                    <p style="color: var(--text-secondary); margin-top: 0;">Visualize as 15 sessões mais recentes. Clique em uma linha para ler a conversa completa.</p>
+                    
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Primeira Pergunta do Usuário</th>
+                                <th style="text-align: right;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="3">Carregando histórico...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- Fim tab-history -->
         </main>
+    </div>
+
+    <!-- Modal Visualizador de Chat -->
+    <div id="chatModal" class="chat-modal" onclick="fecharModal(event)">
+        <div class="chat-modal-content" onclick="event.stopPropagation()">
+            <div class="chat-modal-header">
+                <h3 style="margin:0; font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px;">Transcrição do Chat</h3>
+                <button onclick="fecharModal(null, true)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.25rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="chatModalBody" class="chat-modal-body">
+                <!-- Balões de chat injetados aqui -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -235,23 +380,87 @@
             }
         }
 
+        // Aba Switcher
+        function switchTab(tabId, event) {
+            if(event) event.preventDefault();
+            // Atualizar menu
+            document.querySelectorAll('.admin-nav .nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            // Atualizar abas
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById('tab-' + tabId).style.display = 'block';
+        }
+
+        // Buscar modelos OpenRouter para preencher o select
+        async function carregarModelosOpenRouter(modeloAtual) {
+            try {
+                const res = await fetch('/api/admin/openrouter-models');
+                const data = await res.json();
+                
+                if (data.models) {
+                    const select = document.getElementById('modelSelect');
+                    
+                    // Manter apenas a primeira opção ("Modelos Gratuitos")
+                    select.innerHTML = '<option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option>';
+                    
+                    // Adicionar modelos da OpenRouter
+                    data.models.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.id;
+                        opt.textContent = m.name || m.id;
+                        select.appendChild(opt);
+                    });
+
+                    // Selecionar o valor atual do config
+                    if (modeloAtual) {
+                        select.value = modeloAtual;
+                    }
+                }
+            } catch(e) {
+                console.error("Erro ao carregar modelos OpenRouter", e);
+            }
+        }
+
         // Carregar e Salvar Configurações
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/admin/config');
                 const data = await res.json();
-                document.getElementById('modelsList').value = data.models.join('\n');
+                
+                // Checar se o array de modelos é a configuração de gratuitos padrão
+                let modeloAtual = "free-fallback";
+                const modelsArray = data.models || [];
+                
+                // Se a lista de modelos só tem 1 item, então não é o fallback, é um modelo específico
+                if (modelsArray.length === 1 && modelsArray[0] !== "free-fallback") {
+                    modeloAtual = modelsArray[0];
+                }
+
+                // Iniciar carregamento do Dropdown e definir o atual
+                carregarModelosOpenRouter(modeloAtual);
+
             } catch (err) {
                 console.error("Erro ao carregar configurações", err);
             }
         }
 
         async function salvarConfiguracoes() {
-            const modelsText = document.getElementById('modelsList').value;
-            const modelsArray = modelsText.split('\n').map(m => m.trim()).filter(m => m);
+            const selectValue = document.getElementById('modelSelect').value;
+            
+            let modelsArray = [];
+            if (selectValue === 'free-fallback') {
+                modelsArray = [
+                    "meta-llama/llama-3.3-70b-instruct:free",
+                    "google/gemma-3-27b-it:free",
+                    "google/gemma-3-12b-it:free",
+                    "mistralai/mistral-7b-instruct:free"
+                ];
+            } else {
+                modelsArray = [selectValue]; // Apenas 1 modelo selecionado
+            }
             
             try {
-                // Preservar outras configs buscando antes
                 const currentRes = await fetch('/api/admin/config');
                 let currentConfig = await currentRes.json();
                 
@@ -270,8 +479,116 @@
             }
         }
 
+        // --- RAG UPLOAD ---
+        document.getElementById('formRAG').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('ragFile');
+            const agentSelect = document.getElementById('ragAgentSelect');
+            const btn = document.getElementById('btnUploadRAG');
+            const status = document.getElementById('ragStatus');
+
+            if (!fileInput.files[0]) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('agentTable', agentSelect.value);
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando PDF...';
+            status.style.display = 'block';
+            status.textContent = "Lendo e vetorizando o documento... Isso pode levar alguns minutos.";
+            status.style.color = "var(--text-secondary)";
+
+            try {
+                const res = await fetch('/api/admin/upload-rag', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    status.textContent = "✅ Vetorização concluída com sucesso!";
+                    status.style.color = "var(--accent-green)";
+                    fileInput.value = ""; // limpa
+                } else {
+                    status.textContent = "❌ Erro: " + (data.erro || "Falha na vetorização");
+                    status.style.color = "#EF4444";
+                }
+            } catch (err) {
+                status.textContent = "❌ Erro de conexão ao enviar PDF.";
+                status.style.color = "#EF4444";
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Iniciar Vetorização';
+            }
+        });
+
+        // --- HISTÓRICO DE CHAT ---
+        let currentSessoes = [];
+
+        async function carregarHistorico() {
+            try {
+                const res = await fetch('/api/admin/chat-history');
+                const data = await res.json();
+                const tbody = document.getElementById('historyTableBody');
+                
+                if (!data.sessoes || data.sessoes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">Nenhum histórico encontrado.</td></tr>';
+                    return;
+                }
+
+                currentSessoes = data.sessoes;
+                tbody.innerHTML = '';
+
+                data.sessoes.forEach((sessao, index) => {
+                    const dataObj = new Date(sessao.data);
+                    const tr = document.createElement('tr');
+                    tr.onclick = () => abrirModalChat(index);
+                    
+                    tr.innerHTML = `
+                        <td style="white-space: nowrap;">${dataObj.toLocaleDateString('pt-BR')} ${dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${sessao.primeira_pergunta || "<em>Sem pergunta</em>"}
+                        </td>
+                        <td style="text-align: right;">
+                            <span style="color: var(--accent-green); font-size: 0.85rem;"><i class="fa-solid fa-eye"></i> Ler</span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar historico", err);
+            }
+        }
+
+        function abrirModalChat(index) {
+            const sessao = currentSessoes[index];
+            if (!sessao) return;
+
+            const modalBody = document.getElementById('chatModalBody');
+            modalBody.innerHTML = '';
+
+            sessao.mensagens.forEach(msg => {
+                const isUser = msg.role === 'user';
+                const bubble = document.createElement('div');
+                bubble.className = `chat-bubble ${isUser ? 'bubble-user' : 'bubble-agent'}`;
+                // Converter quebras de linha básicas
+                bubble.innerHTML = `<strong>${isUser ? 'Aluno' : 'IA'}:</strong><br>` + (msg.content || "").replace(/\n/g, '<br>');
+                modalBody.appendChild(bubble);
+            });
+
+            document.getElementById('chatModal').style.display = 'flex';
+        }
+
+        function fecharModal(e, force = false) {
+            if (force || e.target.id === 'chatModal') {
+                document.getElementById('chatModal').style.display = 'none';
+            }
+        }
+
         // Init
         carregarConfiguracoes();
+        carregarHistorico();
     </script>
 </body>
 </html>

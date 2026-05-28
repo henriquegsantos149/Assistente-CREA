@@ -96,7 +96,7 @@
         .login-input {
             width: 100%;
             padding: 1rem 1rem 1rem 3rem;
-            background: rgba(0, 0, 0, 0.4);
+            background: var(--bg-surface-light);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             color: var(--text-primary);
@@ -108,7 +108,7 @@
         .login-input:focus {
             outline: none;
             border-color: var(--accent-green);
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--bg-surface);
             box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-green) 15%, transparent);
         }
 
@@ -157,6 +157,8 @@
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
         .theme-admin-wrapper {
             position: absolute;
             top: 1.5rem;

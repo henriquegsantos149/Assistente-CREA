@@ -40,3 +40,55 @@ as $$
   order by documentos_crea.embedding <=> query_embedding
   limit match_count;
 $$;
+
+-- =================================================================================
+-- TABELAS PARA OUTROS AGENTES
+-- =================================================================================
+
+-- Agente INCRA
+create table if not exists documentos_incra (
+  id bigserial primary key,
+  content text not null,
+  metadata jsonb,
+  embedding vector(384)
+);
+
+create index on documentos_incra using hnsw (embedding vector_cosine_ops);
+
+create or replace function match_documentos_incra (
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int
+)
+returns table (id bigint, content text, metadata jsonb, similarity float)
+language sql stable as $$
+  select id, content, metadata, 1 - (embedding <=> query_embedding) as similarity
+  from documentos_incra
+  where 1 - (embedding <=> query_embedding) > match_threshold
+  order by embedding <=> query_embedding
+  limit match_count;
+$$;
+
+-- Agente ADM
+create table if not exists documentos_adm (
+  id bigserial primary key,
+  content text not null,
+  metadata jsonb,
+  embedding vector(384)
+);
+
+create index on documentos_adm using hnsw (embedding vector_cosine_ops);
+
+create or replace function match_documentos_adm (
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int
+)
+returns table (id bigint, content text, metadata jsonb, similarity float)
+language sql stable as $$
+  select id, content, metadata, 1 - (embedding <=> query_embedding) as similarity
+  from documentos_adm
+  where 1 - (embedding <=> query_embedding) > match_threshold
+  order by embedding <=> query_embedding
+  limit match_count;
+$$;
