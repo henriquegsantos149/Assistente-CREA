@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <title>Acesso Restrito — Ambiental Pro</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/Logo SVG.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem('creia-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-mixed);
+            padding: 3rem;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: fadeInDown 0.6s var(--spring-easing) both;
+            position: relative;
+        }
+        
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all var(--transition-base);
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-green) 15%, transparent);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            color: var(--bg-main);
+            border: none;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all var(--transition-spring);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+
+        .error-message {
+            color: #FCA5A5;
+            background: color-mix(in srgb, #EF4444 15%, transparent);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            display: none;
+            border: 1px solid color-mix(in srgb, #EF4444 30%, transparent);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color var(--transition-fast);
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        .theme-admin-wrapper {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+    </style>
+</head>
+<body class="hub-theme">
+    <div class="theme-admin-wrapper">
+        <div class="theme-switch-wrapper">
+            <span class="theme-label-text" id="themeLabelText">Dark Mode</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="themeCheckbox">
+                <span class="theme-slider">
+                    <i class="fa-solid fa-moon" style="transform: translateX(-2px)"></i>
+                    <i class="fa-solid fa-sun" style="transform: translateX(2px)"></i>
+                </span>
+            </label>
+        </div>
+    </div>
+    <div class="login-container">
+        <div class="login-card">
+            <i class="fa-solid fa-lock login-icon"></i>
+            <h1 class="login-title">Acesso Restrito</h1>
+            <p class="login-subtitle">Área exclusiva para administradores da plataforma.</p>
+
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" id="passwordInput" class="login-input" placeholder="Senha de acesso" required autofocus>
+                </div>
+                <button type="submit" class="login-btn">Entrar no Dashboard</button>
+                <div id="errorMessage" class="error-message">Senha incorreta.</div>
+            </form>
+
+            <a href="../index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Voltar ao Hub</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (pass === 'geodev') {
+                sessionStorage.setItem('adminAuth', 'true');
+                // Adiciona o efeito visual de entrada antes de redirecionar
+                document.body.style.opacity = '0';
+                document.body.style.transition = 'opacity 0.4s ease';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 400);
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                // Animação de erro (shake)
+                const card = document.querySelector('.login-card');
+                card.style.transform = 'translateX(10px)';
+                setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+                setTimeout(() => card.style.transform = 'translateX(10px)', 200);
+                setTimeout(() => card.style.transform = 'translateX(0)', 300);
+            }
+        });
+    </script>
+    <script src="../theme.js"></script>
+</body>
+</html>

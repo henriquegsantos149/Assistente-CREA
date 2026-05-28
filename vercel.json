@@ -12,11 +12,7 @@
   ],
   "routes": [
     {
-      "src": "/chat",
-      "dest": "/app.py"
-    },
-    {
-      "src": "/extract-name",
+      "src": "/api/(.*)",
       "dest": "/app.py"
     },
     {

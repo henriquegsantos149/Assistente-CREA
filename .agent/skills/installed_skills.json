@@ -1,0 +1,18 @@
+{
+  "skills_installed": [
+    "rmyndharis/antigravity-skills/full-stack-orchestration-full-stack-feature",
+    "rmyndharis/antigravity-skills/rag-implementation",
+    "rmyndharis/antigravity-skills/prompt-engineering-patterns",
+    "rmyndharis/antigravity-skills/api-design-principles",
+    "rmyndharis/antigravity-skills/system-architecture-design",
+    "rmyndharis/antigravity-skills/security-best-practices",
+    "antigravity-awesome-skills/@brainstorming",
+    "antigravity-awesome-skills/@ui-ux-design-system"
+  ],
+  "mcp_integrations": [
+    "Playwright",
+    "Docker"
+  ],
+  "strict_mode": true,
+  "context_isolation": true
+}

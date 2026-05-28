@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <title>Dashboard Admin — Ambiental Pro</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/Logo SVG.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem('creia-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
+    <style>
+        .admin-layout {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .admin-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: color-mix(in srgb, var(--accent-green) 15%, transparent);
+            color: var(--accent-green);
+        }
+
+        .admin-main {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: var(--radius-mixed);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body class="hub-theme">
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div style="text-align: center;">
+                <img src="../assets/Logo com slogan.svg" alt="Ambiental Pro" style="max-height: 40px; margin-bottom: 1rem;">
+                <div style="font-size: 0.75rem; color: var(--accent-green); letter-spacing: 2px;">ADMIN PANEL</div>
+            </div>
+
+            <nav class="admin-nav">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-robot"></i> Gestão de Agentes</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-database"></i> Bases de Conhecimento (RAG)</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Chats</a>
+            </nav>
+
+            <a href="../index.html" class="nav-item" style="margin-top: auto; color: #EF4444;" onclick="sessionStorage.removeItem('adminAuth')">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+            </a>
+        </aside>
+
+        <main class="admin-main">
+            <header class="dashboard-header">
+                <div>
+                    <h1 class="hub-headline" style="margin: 0; font-size: 3.5rem;">Visão Geral</h1>
+                    <p class="hub-subtitle" style="margin: 0;">Bem-vindo ao painel administrativo dos Agentes CRE.IA.</p>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="theme-switch-wrapper">
+                        <span class="theme-label-text" id="themeLabelText">Dark Mode</span>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="themeCheckbox">
+                            <span class="theme-slider">
+                                <i class="fa-solid fa-moon" style="transform: translateX(-2px)"></i>
+                                <i class="fa-solid fa-sun" style="transform: translateX(2px)"></i>
+                            </span>
+                        </label>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.15); color: #10B981; padding: 0.5rem 1rem; border-radius: 99px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="width: 8px; height: 8px; background: #10B981; border-radius: 50%; box-shadow: 0 0 8px #10B981;"></span>
+                        SISTEMA ONLINE
+                    </div>
+                </div>
+            </header>
+
+            <div class="stat-grid" style="margin-bottom: 3rem;">
+                <div class="stat-card">
+                    <span class="stat-label">Total de Agentes</span>
+                    <span class="stat-value">04</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Integração RAG</span>
+                    <span class="stat-value">Ativa</span>
+                </div>
+                <div class="stat-card" style="justify-content: center; align-items: flex-start;">
+                    <span class="stat-label" style="margin-bottom: 0.5rem;">Exportar Interações</span>
+                    <button onclick="exportarCSV()" class="agent-button" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-csv"></i> Baixar Planilha (CSV)
+                    </button>
+                </div>
+            </div>
+
+            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Analista de Dados IA (Insights)</h2>
+            <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
+                <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">A IA irá varrer as perguntas recentes dos alunos e extrair padrões, tendências e dúvidas comuns.</p>
+                <button id="btnInsights" onclick="gerarInsights()" class="agent-button" style="background: var(--text-primary); color: var(--bg-main); width: fit-content; margin-bottom: 1.5rem;">
+                    <i class="fa-solid fa-brain"></i> Gerar Relatório de Insights
+                </button>
+                <div id="insightResult" style="display: none; background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); color: var(--text-primary); white-space: pre-wrap; font-family: 'Outfit', sans-serif; line-height: 1.6;"></div>
+            </div>
+
+            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Configuração de Modelos LLM</h2>
+            <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
+                <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Gerencie a lista de modelos (OpenRouter) que os agentes utilizarão.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                    <label style="color: var(--text-primary); font-weight: 500;">Lista de Modelos de Fallback (Um por linha):</label>
+                    <textarea id="modelsList" rows="5" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; color: var(--text-primary); font-family: monospace; resize: vertical;"></textarea>
+                </div>
+                
+                <button onclick="salvarConfiguracoes()" class="agent-button" style="width: fit-content;">
+                    <i class="fa-solid fa-save"></i> Salvar Configurações
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Proteção simples
+        if (sessionStorage.getItem('adminAuth') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <script src="../theme.js"></script>
+    <script>
+        // Exportar Planilha
+        function exportarCSV() {
+            window.location.href = '/api/admin/export-prompts';
+        }
+
+        // Gerar Insights
+        async function gerarInsights() {
+            const btn = document.getElementById('btnInsights');
+            const resultDiv = document.getElementById('insightResult');
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analisando Dados...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+            resultDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/admin/insights', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.erro) {
+                    alert('Erro: ' + data.erro);
+                } else {
+                    resultDiv.innerHTML = data.insight.replace(/\n/g, '<br>');
+                    resultDiv.style.display = 'block';
+                }
+            } catch (err) {
+                alert('Erro de conexão ao gerar insights.');
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-brain"></i> Gerar Relatório de Insights';
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        }
+
+        // Carregar e Salvar Configurações
+        async function carregarConfiguracoes() {
+            try {
+                const res = await fetch('/api/admin/config');
+                const data = await res.json();
+                document.getElementById('modelsList').value = data.models.join('\n');
+            } catch (err) {
+                console.error("Erro ao carregar configurações", err);
+            }
+        }
+
+        async function salvarConfiguracoes() {
+            const modelsText = document.getElementById('modelsList').value;
+            const modelsArray = modelsText.split('\n').map(m => m.trim()).filter(m => m);
+            
+            try {
+                // Preservar outras configs buscando antes
+                const currentRes = await fetch('/api/admin/config');
+                let currentConfig = await currentRes.json();
+                
+                currentConfig.models = modelsArray;
+
+                const res = await fetch('/api/admin/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                
+                if (res.ok) alert('Configurações salvas com sucesso!');
+                else alert('Erro ao salvar.');
+            } catch (err) {
+                alert('Erro de conexão ao salvar configurações.');
+            }
+        }
+
+        // Init
+        carregarConfiguracoes();
+    </script>
+</body>
+</html>

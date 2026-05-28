@@ -3,74 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente de Atribuição CREA - Ambiental Pro</title>
-    <meta name="description" content="Assistente virtual especialista em legislação do CREA para alunos da Ambiental Pro.">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="view-transition" content="same-origin">
+    <title>Hub de IA — Ambiental Pro</title>
+    <meta name="description" content="Plataforma de Assistentes de IA para alunos da Ambiental Pro.">
+    <link rel="icon" type="image/svg+xml" href="assets/Logo SVG.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem('creia-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
 </head>
-<body>
+<body class="hub-theme">
     <div class="app-container">
         <header class="app-header">
-            <div class="header-content">
-                <img src="assets/Logo com slogan.svg" alt="Ambiental Pro" class="header-logo">
-                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
-                    <div class="dropdown">
-                        <button class="btn-download" id="btnDownload">
-                            <i class="fa-solid fa-cloud-arrow-down"></i> Docs
-                        </button>
-                        <div class="dropdown-content" id="dropdownContent">
-                            <a href="Documentos/Docs para download/PPC GGSR.pdf" download="PPC GGSR.pdf" target="_blank">
-                                <i class="fa-solid fa-file-pdf"></i> PPC GGSR
-                            </a>
-                            <a href="Documentos/Docs para download/Comprovante de Registro no CREA.pdf" download="Comprovante de Registro no CREA.pdf" target="_blank">
-                                <i class="fa-solid fa-file-pdf"></i> Comprovante de Registro
-                            </a>
-                            <a href="Documentos/Docs para download/Ofício nº 09470_2025 - Registro no CREA-RJ.pdf" download="Ofício nº 09470_2025 - Registro no CREA-RJ.pdf" target="_blank">
-                                <i class="fa-solid fa-file-pdf"></i> Ofício Registro CREA-RJ
-                            </a>
-                        </div>
+            <div class="header-content" style="position: relative;">
+                <div style="position: absolute; top: 1rem; right: 1.5rem; z-index: 10;">
+                    <div class="theme-switch-wrapper">
+                        <span class="theme-label-text" id="themeLabelText">Dark Mode</span>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="themeCheckbox">
+                            <span class="theme-slider">
+                                <i class="fa-solid fa-moon" style="transform: translateX(-2px)"></i>
+                                <i class="fa-solid fa-sun" style="transform: translateX(2px)"></i>
+                            </span>
+                        </label>
                     </div>
-                    <button id="restartBtn" class="restart-btn">
-                        <i class="fa-solid fa-rotate-right"></i> Recomeçar
-                    </button>
                 </div>
+                <img src="assets/Logo com slogan.svg" alt="Ambiental Pro" class="header-logo">
+                <h1 class="hub-headline">Hub de Especialistas IA</h1>
+                <p class="hub-subtitle">Selecione o assistente especializado que você precisa. Cada agente possui uma base de conhecimento exclusiva para o seu contexto.</p>
             </div>
         </header>
 
-        <main class="main-content">
-            <section class="chat-section" id="chatSection">
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Mensagens aparecerão aqui -->
-                    </div>
-                    
-                    <div class="chat-suggestions" id="chatSuggestions">
-                        <button class="suggestion-chip">Quais são as disciplinas exigidas por lei para a atribuição?</button>
-                        <button class="suggestion-chip">Qual é o passo a passo para dar entrada no processo no CREA?</button>
-                        <button class="suggestion-chip">Minha formação atual me permite assinar o INCRA?</button>
-                    </div>
+        <main class="main-content hub-main">
+            <div class="agents-grid">
 
-                    <!-- Container flexível que oculta/mostra a área de input -->
-                    <div class="dynamic-input-wrapper" id="dynamicInputWrapper" style="opacity: 0; pointer-events: none;">
-                        <div class="interactive-options" id="interactiveOptions" style="display: none;">
-                            <!-- Botões de Sim/Não serão injetados aqui -->
-                        </div>
-
-                        <div class="chat-input-container" id="chatInputContainer">
-                            <form id="chatForm">
-                                <input type="text" id="userInput" placeholder="Digite sua resposta..." autocomplete="off">
-                                <button type="submit" id="sendBtn">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </button>
-                            </form>
-                        </div>
+                <!-- Card CREA -->
+                <a href="agentes/crea/index.html" class="agent-card" style="--card-color: #10B981;">
+                    <div class="agent-icon" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">
+                        <i class="fa-solid fa-scale-balanced"></i>
                     </div>
+                    <div class="agent-info">
+                        <div class="agent-info-header">
+                            <h3>Assistente CREA</h3>
+                            <span class="status-badge available">Disponível</span>
+                        </div>
+                        <p>Especialista em legislação profissional, atribuições do sistema CONFEA/CREA e registro no INCRA.</p>
+                    </div>
+                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Card Portfólio Geo -->
+                <a href="agentes/em-breve.html" class="agent-card" style="--card-color: #3B82F6;">
+                    <div class="agent-icon" style="background: rgba(59, 130, 246, 0.12); color: #3B82F6;">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <div class="agent-info">
+                        <div class="agent-info-header">
+                            <h3>Portfólio Geo</h3>
+                            <span class="status-badge coming-soon">Em breve</span>
+                        </div>
+                        <p>Análise visual de portfólios de geoprocessamento. Envie seus PDFs com mapas para avaliação técnica.</p>
+                    </div>
+                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Card Experts de Cursos -->
+                <div class="agent-card" id="btn-experts" style="--card-color: #F59E0B;">
+                    <div class="agent-icon" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B;">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="agent-info">
+                        <div class="agent-info-header">
+                            <h3>Experts de Cursos</h3>
+                            <span class="status-badge coming-soon">Em breve</span>
+                        </div>
+                        <p>Tire dúvidas técnicas diretamente com a base de conhecimento (RAG) da sua Pós-graduação.</p>
+                    </div>
+                    <div class="agent-action"><i class="fa-solid fa-chevron-down"></i></div>
                 </div>
-            </section>
+
+                <!-- Card Secretaria Acadêmica -->
+                <a href="agentes/em-breve.html" class="agent-card" style="--card-color: #8B5CF6;">
+                    <div class="agent-icon" style="background: rgba(139, 92, 246, 0.12); color: #8B5CF6;">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div class="agent-info">
+                        <div class="agent-info-header">
+                            <h3>Secretaria Acadêmica</h3>
+                            <span class="status-badge coming-soon">Em breve</span>
+                        </div>
+                        <p>Assistente voltado para processos administrativos, emissão de documentos, prazos e mensalidades.</p>
+                    </div>
+                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+            </div>
         </main>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="script.js"></script>
+
+    <!-- Modal de Seleção de Experts (Nativo <dialog>) -->
+    <dialog class="modal-overlay" id="expertsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Selecione o seu Curso</h2>
+                <button class="close-modal" id="closeExperts" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body courses-grid">
+                <a href="agentes/em-breve.html" class="course-btn">
+                    <i class="fa-solid fa-map"></i> Georreferenciamento (GGSR)
+                </a>
+                <a href="agentes/em-breve.html" class="course-btn">
+                    <i class="fa-solid fa-leaf"></i> Licenciamento (ALPA)
+                </a>
+                <a href="agentes/em-breve.html" class="course-btn">
+                    <i class="fa-solid fa-briefcase"></i> MBA IDA
+                </a>
+                <a href="agentes/em-breve.html" class="course-btn">
+                    <i class="fa-solid fa-seedling"></i> Recuperação de Áreas (GRAC)
+                </a>
+                <a href="agentes/em-breve.html" class="course-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i> Perícia Ambiental (PAP)
+                </a>
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        const expertsModal = document.getElementById('expertsModal');
+
+        document.getElementById('btn-experts').addEventListener('click', () => {
+            expertsModal.showModal();
+        });
+
+        document.getElementById('closeExperts').addEventListener('click', () => {
+            expertsModal.close();
+        });
+
+        // Fechar ao clicar fora do modal (no ::backdrop)
+        expertsModal.addEventListener('click', (e) => {
+            const dialogDimensions = expertsModal.getBoundingClientRect();
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                expertsModal.close();
+            }
+        });
+    </script>
+    <script src="theme.js"></script>
+
+    <a href="admin/login.html" class="admin-floating-btn" title="Painel Administrativo">
+        <i class="fa-solid fa-chart-simple"></i>
+    </a>
 </body>
 </html>
