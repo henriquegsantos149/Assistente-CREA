@@ -16,19 +16,19 @@ def get_modelos_fallback():
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
                 return config.get("models", [
-                    "meta-llama/llama-3.3-70b-instruct:free",
-                    "google/gemma-2-9b-it:free",
-                    "nousresearch/hermes-3-llama-3.1-405b:free",
-                    "qwen/qwen-2.5-coder-32b-instruct:free"
+                    "openrouter/free",
+                    "deepseek/deepseek-v4-flash:free",
+                    "google/gemma-4-31b-it:free",
+                    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
                 ])
     except Exception as e:
         logger.error(f"Erro ao carregar config.json: {e}")
         
     return [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "google/gemma-2-9b-it:free",
-        "nousresearch/hermes-3-llama-3.1-405b:free",
-        "qwen/qwen-2.5-coder-32b-instruct:free"
+        "openrouter/free",
+        "deepseek/deepseek-v4-flash:free",
+        "google/gemma-4-31b-it:free",
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
     ]
 
 

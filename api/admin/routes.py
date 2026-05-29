@@ -130,7 +130,7 @@ def save_config():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@admin_bp.route('/api/admin/openrouter-models', methods=['GET'])
+@admin_bp.route('/openrouter-models', methods=['GET'])
 def list_openrouter_models():
     """Busca a lista de modelos atualizados da OpenRouter"""
     try:
@@ -160,7 +160,7 @@ def list_openrouter_models():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@admin_bp.route('/api/admin/upload-rag', methods=['POST'])
+@admin_bp.route('/upload-rag', methods=['POST'])
 def upload_rag_pdf():
     """Recebe um PDF e processa a vetorização via script Node.js."""
     try:
@@ -199,7 +199,7 @@ def upload_rag_pdf():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@admin_bp.route('/api/admin/chat-history', methods=['GET'])
+@admin_bp.route('/chat-history', methods=['GET'])
 def get_chat_history():
     """Retorna as sessões mais recentes agrupadas por ID."""
     try:
@@ -235,7 +235,7 @@ def get_chat_history():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@admin_bp.route('/api/admin/rag-files', methods=['GET'])
+@admin_bp.route('/rag-files', methods=['GET'])
 def get_rag_files():
     """Retorna a lista de arquivos únicos que já foram vetorizados para um dado agente."""
     try:
