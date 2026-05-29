@@ -515,16 +515,20 @@
             travarEdicaoRegras(); // Garante que volta bloqueado ao trocar
         }
 
-        // Salva as regras do agente atual na variável local ANTES de trocar de agente no dropdown
-        document.getElementById('configAgentSelect').addEventListener('focus', function() {
-            this.dataset.previous = this.value;
+        let currentAgentSelect = 'crea'; // Estado inicial
+        
+        // Garante que o estado acompanha o valor real na inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('configAgentSelect');
+            if(select) currentAgentSelect = select.value;
         });
+
+        // Salva as regras do agente atual na variável local ANTES de carregar o novo do dropdown
         document.getElementById('configAgentSelect').addEventListener('change', function() {
-            const prev = this.dataset.previous;
-            if (prev) {
-                agentConfigsLocal[prev] = { regras_customizadas: document.getElementById('agentRules').value };
+            if (currentAgentSelect) {
+                agentConfigsLocal[currentAgentSelect] = { regras_customizadas: document.getElementById('agentRules').value };
             }
-            this.dataset.previous = this.value;
+            currentAgentSelect = this.value;
             atualizarTextareaAgente();
         });
 
