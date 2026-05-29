@@ -131,6 +131,12 @@ def get_config():
         
         config = {"models": [], "agent_configs": {}}
         
+        # Carrega o default
+        try:
+            from api.crea.prompt import DEFAULT_CREA_PROMPT
+        except:
+            DEFAULT_CREA_PROMPT = ""
+            
         if res.status_code == 200:
             data = res.json()
             for row in data:
@@ -141,6 +147,10 @@ def get_config():
                     config["agent_configs"][row_id] = {
                         "regras_customizadas": row.get("regras_customizadas", "")
                     }
+                    
+        # Se 'crea' não estiver no banco ou estiver vazio, joga o default para o painel mostrar
+        if "crea" not in config["agent_configs"] or not config["agent_configs"]["crea"].get("regras_customizadas"):
+            config["agent_configs"]["crea"] = {"regras_customizadas": DEFAULT_CREA_PROMPT}
         
         return jsonify(config), 200
     except Exception as e:

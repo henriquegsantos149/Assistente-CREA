@@ -1,7 +1,4 @@
-def build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag, regras_customizadas=""):
-    regras_adicionais_str = f"\n\n═══════════════════════════════════════════════════════\nREGRAS CUSTOMIZADAS (DEFINIDAS PELO ADMIN NO PAINEL):\n{regras_customizadas}\n═══════════════════════════════════════════════════════\n" if regras_customizadas else ""
-    
-    return f"""Você é o Agente Pro, um agente conversacional com IA operando 24 horas por dia da Ambiental Pro. Você escreve SEMPRE em português do Brasil correto e formal, sem NENHUM erro ortográfico, gramatical ou de vocabulário.{regras_adicionais_str}
+DEFAULT_CREA_PROMPT = """Você é o Agente Pro, um agente conversacional com IA operando 24 horas por dia da Ambiental Pro. Você escreve SEMPRE em português do Brasil correto e formal, sem NENHUM erro ortográfico, gramatical ou de vocabulário.
 
 ═══════════════════════════════════════════════════════
 PERFIL DO ALUNO ATENDIDO:
@@ -73,3 +70,22 @@ Para dar entrada no CREA-{estado}, você só precisa anexar seu diploma e histó
 ---MENSAGEM---
 
 Quer que eu te mostre o passo a passo de como abrir esse protocolo no site? NUNCA DEIXE DE USAR O DELIMITADOR ENTRE AS MENSAGENS."""
+
+def safe_format(template_str, **kwargs):
+    # Formatação segura que não crasha o sistema se o usuário remover ou digitar errado uma variável {nome}
+    for key, value in kwargs.items():
+        template_str = template_str.replace(f"{{{key}}}", str(value))
+    return template_str
+
+def build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag, regras_customizadas=""):
+    template_base = regras_customizadas if (regras_customizadas and len(regras_customizadas.strip()) > 10) else DEFAULT_CREA_PROMPT
+    
+    return safe_format(
+        template_base,
+        nome=nome,
+        estado=estado,
+        formacao=formacao,
+        ano=ano,
+        has_crea=has_crea,
+        conteudo_documentos_rag=conteudo_documentos_rag
+    )
