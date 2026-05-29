@@ -258,10 +258,29 @@
             <div id="tab-agentes" class="tab-content" style="display: none; animation: fadeInDown 0.4s ease forwards;">
                 <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-primary);">Gestão de Agentes &amp; Modelos</h2>
                 <div class="stat-card" style="margin-bottom: 3rem; padding: 2rem;">
-                    <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Selecione o modelo que alimentará os Assistentes (comunicando com a OpenRouter).</p>
+                    <p style="color: var(--text-secondary); margin-top: 0; margin-bottom: 1.5rem;">Configure o modelo e as regras personalizadas (contexto) para cada Assistente.</p>
                     
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; max-width: 500px;">
-                        <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">Modelo Principal do Agente</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; max-width: 700px;">
+                        <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">1. Selecione o Agente para Configurar</label>
+                        <select id="configAgentSelect" style="background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; appearance: auto;" onchange="atualizarTextareaAgente()">
+                            <option value="crea">Assistente CREA</option>
+                            <option value="cursos">Expert de Cursos</option>
+                            <option value="portfolio">Expert de Portfólio Geo</option>
+                            <option value="secretaria">Secretaria Acadêmica</option>
+                            <option value="adm">Agente ADM (Insights)</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; max-width: 700px;">
+                        <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">2. Regras Customizadas e Contexto Geral do Agente</label>
+                        <textarea id="agentRules" rows="8" placeholder="Ex: Nunca responda sobre futebol. Seja sempre muito rigoroso nas regras. Diga sempre 'Olá meu caro aluno' no início." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 0.95rem; resize: vertical;"></textarea>
+                        <small style="color: var(--text-muted); font-size: 0.8rem;">Estas regras serão injetadas diretamente no cérebro (system prompt) do agente selecionado acima.</small>
+                    </div>
+                    
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0; max-width: 700px;">
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; max-width: 700px;">
+                        <label style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem;">3. Modelo Global de IA (Para Todos os Agentes)</label>
                         <select id="modelSelect" style="background: var(--bg-surface-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-size: 1rem; cursor: pointer; appearance: auto;">
                             <option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option>
                             <option disabled>Carregando modelos da OpenRouter...</option>
@@ -439,15 +458,44 @@
             }
         }
 
+        // --- CONFIGURAÇÕES DE AGENTES ---
+        let agentConfigsLocal = {};
+        
+        function atualizarTextareaAgente() {
+            const agent = document.getElementById('configAgentSelect').value;
+            const textarea = document.getElementById('agentRules');
+            if (agentConfigsLocal[agent] && agentConfigsLocal[agent].regras_customizadas) {
+                textarea.value = agentConfigsLocal[agent].regras_customizadas;
+            } else {
+                textarea.value = "";
+            }
+        }
+
+        // Salva as regras do agente atual na variável local ANTES de trocar de agente no dropdown
+        document.getElementById('configAgentSelect').addEventListener('focus', function() {
+            this.dataset.previous = this.value;
+        });
+        document.getElementById('configAgentSelect').addEventListener('change', function() {
+            const prev = this.dataset.previous;
+            if (prev) {
+                agentConfigsLocal[prev] = { regras_customizadas: document.getElementById('agentRules').value };
+            }
+            this.dataset.previous = this.value;
+            atualizarTextareaAgente();
+        });
+
         // Carregar e Salvar Configurações
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/admin/config');
-                const data = await res.json();
+                const config = await res.json();
+                
+                agentConfigsLocal = config.agent_configs || {};
+                atualizarTextareaAgente(); // Atualiza o textarea com base no agente atualmente selecionado
                 
                 // Checar se o array de modelos é a configuração de gratuitos padrão
                 let modeloAtual = "free-fallback";
-                const modelsArray = data.models || [];
+                const modelsArray = config.models || [];
                 
                 // Se a lista de modelos só tem 1 item, então não é o fallback, é um modelo específico
                 if (modelsArray.length === 1 && modelsArray[0] !== "free-fallback") {
@@ -477,16 +525,20 @@
                 modelsArray = [selectValue]; // Apenas 1 modelo selecionado
             }
             
-            try {
-                const currentRes = await fetch('/api/admin/config');
-                let currentConfig = await currentRes.json();
-                
-                currentConfig.models = modelsArray;
+            // Salvar o que está digitado atualmente na variável local antes de enviar
+            const currentAgent = document.getElementById('configAgentSelect').value;
+            agentConfigsLocal[currentAgent] = { regras_customizadas: document.getElementById('agentRules').value };
 
+            const config = {
+                models: modelsArray,
+                agent_configs: agentConfigsLocal
+            };
+
+            try {
                 const res = await fetch('/api/admin/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentConfig)
+                    body: JSON.stringify(config)
                 });
                 
                 if (res.ok) alert('Configurações salvas com sucesso!');

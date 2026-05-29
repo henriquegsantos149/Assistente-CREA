@@ -110,11 +110,39 @@ from pathlib import Path
 @admin_bp.route('/config', methods=['GET'])
 def get_config():
     try:
-        config_path = Path(__file__).parent.parent.parent / "data" / "config.json"
-        if config_path.exists():
-            with open(config_path, "r", encoding="utf-8") as f:
-                return jsonify(json.load(f)), 200
-        return jsonify({"models": [], "agent_configs": {}}), 200
+        from dotenv import load_dotenv
+        env_path = Path(__file__).parent.parent.parent / '.env'
+        load_dotenv(dotenv_path=env_path)
+
+        supabase_url = os.environ.get("SUPABASE_URL", "").rstrip('/')
+        supabase_key = os.environ.get("SUPABASE_KEY")
+        
+        if not supabase_url or not supabase_key:
+            return jsonify({"models": [], "agent_configs": {}}), 200
+
+        headers = {
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json"
+        }
+
+        url = f"{supabase_url}/rest/v1/configuracoes_agentes?select=*"
+        res = requests.get(url, headers=headers, timeout=10)
+        
+        config = {"models": [], "agent_configs": {}}
+        
+        if res.status_code == 200:
+            data = res.json()
+            for row in data:
+                row_id = row.get("id")
+                if row_id == "global":
+                    config["models"] = row.get("modelos_fallback", [])
+                else:
+                    config["agent_configs"][row_id] = {
+                        "regras_customizadas": row.get("regras_customizadas", "")
+                    }
+        
+        return jsonify(config), 200
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
@@ -123,9 +151,43 @@ def get_config():
 def save_config():
     try:
         dados = request.json
-        config_path = Path(__file__).parent.parent.parent / "data" / "config.json"
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(dados, f, indent=2, ensure_ascii=False)
+        
+        from dotenv import load_dotenv
+        env_path = Path(__file__).parent.parent.parent / '.env'
+        load_dotenv(dotenv_path=env_path)
+
+        supabase_url = os.environ.get("SUPABASE_URL", "").rstrip('/')
+        supabase_key = os.environ.get("SUPABASE_KEY")
+        
+        if not supabase_url or not supabase_key:
+            return jsonify({"erro": "Credenciais Supabase não configuradas no servidor."}), 500
+
+        headers = {
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        }
+        
+        url = f"{supabase_url}/rest/v1/configuracoes_agentes"
+        
+        # Salva o global (modelos)
+        models = dados.get("models", [])
+        payload_global = {
+            "id": "global",
+            "modelos_fallback": models
+        }
+        requests.post(url, json=payload_global, headers=headers, timeout=10)
+        
+        # Salva os agentes
+        agent_configs = dados.get("agent_configs", {})
+        for agent_id, agent_data in agent_configs.items():
+            payload_agent = {
+                "id": agent_id,
+                "regras_customizadas": agent_data.get("regras_customizadas", "")
+            }
+            requests.post(url, json=payload_agent, headers=headers, timeout=10)
+
         return jsonify({"status": "sucesso"}), 200
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

@@ -57,7 +57,18 @@ def chat_crea():
         # Chama a função de RAG com a pergunta do usuário
         conteudo_documentos_rag = get_crea_context(mensagem_aluno)
         
-        system_prompt = build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag)
+        # Busca regras customizadas
+        regras_customizadas = ""
+        try:
+            from api.shared.db import get_supabase_client
+            supa = get_supabase_client()
+            res = supa.table("configuracoes_agentes").select("regras_customizadas").eq("id", "crea").execute()
+            if res.data and len(res.data) > 0:
+                regras_customizadas = res.data[0].get("regras_customizadas", "")
+        except Exception as err:
+            print(f"[RULES WARNING] Falha ao buscar regras customizadas: {err}")
+        
+        system_prompt = build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag, regras_customizadas)
 
         # 1. Tenta criar ou carregar a sessão no Supabase para guardar o perfil
         metadados = {

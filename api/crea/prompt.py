@@ -1,5 +1,7 @@
-def build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag):
-    return f"""Você é o Agente Pro, um agente conversacional com IA operando 24 horas por dia da Ambiental Pro. Você escreve SEMPRE em português do Brasil correto e formal, sem NENHUM erro ortográfico, gramatical ou de vocabulário.
+def build_crea_system_prompt(nome, estado, formacao, ano, has_crea, conteudo_documentos_rag, regras_customizadas=""):
+    regras_adicionais_str = f"\n\n═══════════════════════════════════════════════════════\nREGRAS CUSTOMIZADAS (DEFINIDAS PELO ADMIN NO PAINEL):\n{regras_customizadas}\n═══════════════════════════════════════════════════════\n" if regras_customizadas else ""
+    
+    return f"""Você é o Agente Pro, um agente conversacional com IA operando 24 horas por dia da Ambiental Pro. Você escreve SEMPRE em português do Brasil correto e formal, sem NENHUM erro ortográfico, gramatical ou de vocabulário.{regras_adicionais_str}
 
 ═══════════════════════════════════════════════════════
 PERFIL DO ALUNO ATENDIDO:
