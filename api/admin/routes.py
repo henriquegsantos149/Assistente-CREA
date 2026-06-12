@@ -187,7 +187,9 @@ def save_config():
             "id": "global",
             "modelos_fallback": models
         }
-        requests.post(url, json=payload_global, headers=headers, timeout=10)
+        res_global = requests.post(url, json=payload_global, headers=headers, timeout=10)
+        if res_global.status_code not in (200, 201):
+            return jsonify({"erro": f"Erro ao salvar configurações globais: {res_global.text}"}), 500
         
         # Salva os agentes
         agent_configs = dados.get("agent_configs", {})
@@ -196,7 +198,9 @@ def save_config():
                 "id": agent_id,
                 "regras_customizadas": agent_data.get("regras_customizadas", "")
             }
-            requests.post(url, json=payload_agent, headers=headers, timeout=10)
+            res_agent = requests.post(url, json=payload_agent, headers=headers, timeout=10)
+            if res_agent.status_code not in (200, 201):
+                return jsonify({"erro": f"Erro ao salvar o agente {agent_id}: {res_agent.text}"}), 500
 
         return jsonify({"status": "sucesso"}), 200
     except Exception as e:
@@ -204,31 +208,24 @@ def save_config():
 
 @admin_bp.route('/openrouter-models', methods=['GET'])
 def list_openrouter_models():
-    """Busca a lista de modelos atualizados da OpenRouter"""
+    """Busca a lista dos principais modelos da OpenRouter"""
     try:
-        # A API da OpenRouter para listar modelos é aberta, não precisa de chave,
-        # mas vamos passar para evitar qualquer bloqueio
-        headers = {}
-        # Opcional: Se quiser usar a chave:
-        # from api.shared.llm import get_openrouter_key
-        # key = get_openrouter_key()
-        # if key: headers['Authorization'] = f'Bearer {key}'
+        # Lista curada apenas dos melhores modelos que funcionam perfeitamente na OpenRouter
+        curated_models = [
+            {"id": "openai/gpt-4o", "name": "OpenAI GPT-4o"},
+            {"id": "openai/gpt-4o-mini", "name": "OpenAI GPT-4o Mini"},
+            {"id": "anthropic/claude-3.5-sonnet", "name": "Anthropic Claude 3.5 Sonnet"},
+            {"id": "anthropic/claude-3-haiku", "name": "Anthropic Claude 3 Haiku"},
+            {"id": "google/gemini-pro-1.5", "name": "Google Gemini 1.5 Pro"},
+            {"id": "google/gemini-flash-1.5", "name": "Google Gemini 1.5 Flash"},
+            {"id": "meta-llama/llama-3.1-70b-instruct", "name": "Llama 3.1 70B Instruct"},
+            {"id": "meta-llama/llama-3.1-8b-instruct", "name": "Llama 3.1 8B Instruct"},
+            {"id": "deepseek/deepseek-chat", "name": "DeepSeek V3"},
+            {"id": "deepseek/deepseek-coder", "name": "DeepSeek Coder"},
+            {"id": "openrouter/free", "name": "OpenRouter Free (Auto-Select)"}
+        ]
         
-        response = requests.get('https://openrouter.ai/api/v1/models', headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            data = response.json()
-            models = []
-            for m in data.get('data', []):
-                models.append({
-                    "id": m.get('id'),
-                    "name": m.get('name')
-                })
-            # Ordenar por nome
-            models.sort(key=lambda x: x['name'])
-            return jsonify({"models": models})
-        else:
-            return jsonify({"erro": "Falha ao buscar modelos"}), 500
+        return jsonify({"models": curated_models})
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
