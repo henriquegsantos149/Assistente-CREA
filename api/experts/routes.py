@@ -1,7 +1,7 @@
 import re
 from flask import Blueprint, request, jsonify
 from api.shared.llm import call_openrouter
-from api.shared.rag import get_crea_context
+from api.shared.rag import get_experts_context
 from api.experts.prompt import build_experts_system_prompt
 from api.shared.db import criar_ou_carregar_sessao, persistir_mensagem
 
@@ -51,7 +51,7 @@ def chat_experts():
         historico = dados.get("historico", [])
 
         # Chama a função de RAG com a pergunta do usuário
-        conteudo_documentos_rag = get_crea_context(mensagem_aluno) # TODO: update to get_experts_context
+        conteudo_documentos_rag = get_experts_context(mensagem_aluno)
         
         # Busca regras customizadas
         regras_customizadas = ""

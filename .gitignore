@@ -3,3 +3,7 @@ venv/
 __pycache__/
 *.pyc
 data/
+*.pdf
+*.txt
+node_modules/
+Documentos/

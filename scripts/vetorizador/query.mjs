@@ -18,6 +18,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const query = process.argv[2];
+const rpcFunction = process.argv[3] || 'match_documentos_crea';
 
 if (!query) {
     console.error(JSON.stringify({ error: "No query provided." }));
@@ -33,7 +34,7 @@ async function main() {
     const output = await generateEmbedding(query, { pooling: 'mean', normalize: true });
     const embedding = Array.from(output.data);
 
-    const { data, error } = await supabase.rpc('match_documentos_crea', {
+    const { data, error } = await supabase.rpc(rpcFunction, {
         query_embedding: embedding,
         match_threshold: 0.2, // Limite de similaridade
         match_count: 5 // Traz os 5 blocos mais relevantes

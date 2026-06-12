@@ -2,7 +2,7 @@ import os
 import json
 import subprocess
 
-def get_crea_context(user_query=""):
+def _get_rag_context(user_query="", rpc_function="match_documentos_crea"):
     """
     Vetoriza a pergunta do usuário e busca os trechos mais relevantes
     dos documentos no Supabase (RAG) chamando o script intermediário Node.js.
@@ -13,16 +13,16 @@ def get_crea_context(user_query=""):
     script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'scripts', 'vetorizador', 'query.mjs')
     
     try:
-        # Chama o Node.js
+        # Chama o Node.js passando a query e a função rpc
         result = subprocess.run(
-            ['node', script_path, user_query], 
+            ['node', script_path, user_query, rpc_function], 
             capture_output=True, 
             text=True, 
             encoding='utf-8'
         )
         
         if result.returncode != 0:
-            print(f"[RAG ERROR] Falha no script de busca: {result.stderr}")
+            print(f"[RAG ERROR] Falha no script de busca ({rpc_function}): {result.stderr}")
             return ""
             
         # Pega a última linha (que deve conter o array JSON)
@@ -38,7 +38,7 @@ def get_crea_context(user_query=""):
             return ""
             
         if not data:
-            return "Nenhuma norma técnica diretamente encontrada relacionada a esta pergunta exata."
+            return "Nenhuma informação diretamente encontrada relacionada a esta pergunta exata na base de conhecimento."
             
         textos = []
         for item in data:
@@ -47,9 +47,18 @@ def get_crea_context(user_query=""):
             textos.append(f"--- TRECHO EXTRAÍDO DE: {arquivo} (Confiança/Relevância: {sim:.2f}) ---\n{item.get('content')}")
             
         contexto_final = "\n\n".join(textos)
-        print(f"[RAG SUCCESS] {len(data)} trechos recuperados do Supabase.")
+        print(f"[RAG SUCCESS] {len(data)} trechos recuperados do Supabase ({rpc_function}).")
         return contexto_final
         
     except Exception as e:
-        print(f"[RAG EXCEPTION] Erro ao buscar contexto: {e}")
+        print(f"[RAG EXCEPTION] Erro ao buscar contexto ({rpc_function}): {e}")
         return ""
+
+def get_crea_context(user_query=""):
+    return _get_rag_context(user_query, "match_documentos_crea")
+
+def get_experts_context(user_query=""):
+    return _get_rag_context(user_query, "match_documentos_cursos")
+
+def get_secretaria_context(user_query=""):
+    return _get_rag_context(user_query, "match_documentos_secretaria")
