@@ -20,7 +20,7 @@
     --accent-glow:      color-mix(in srgb, var(--accent-green) 20%, transparent);
 
     /* Grid Theme */
-    --grid-color:       rgba(16, 185, 129, 0.05); /* Verde Neon 5% - Mais sutil */
+    --grid-color:       rgba(16, 185, 129, 0.12); /* Verde Neon 12% - Equilíbrio entre destaque e suavidade */
 
     /* Formas — O Símbolo do "A": Mistura de reto e curvo */
     --radius-mixed:     2.5rem 0 2.5rem 0;
@@ -291,7 +291,8 @@ body.hub-theme .header-content {
     background: var(--bg-glass);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.6); /* Bordas escurecidas */
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.08), inset 0 0 0 1px rgba(16, 185, 129, 0.1); /* Glow sutil ao redor */
     border-radius: var(--radius-mixed); /* Design Manual */
     padding: 1.75rem;
     display: flex;
@@ -462,12 +463,12 @@ dialog.modal-overlay[open]::backdrop {
 
 .modal-content {
     background: var(--bg-surface);
-    border: 1px solid var(--border-hover);
+    border: 1px solid rgba(0, 0, 0, 0.8); /* Bordas escurecidas */
     border-radius: var(--radius-mixed);
     width: 90vw;
     max-width: 500px;
     padding: 2.5rem;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.1), inset 0 0 0 1px rgba(16, 185, 129, 0.1), var(--shadow-lg); /* Glow verde ao redor */
     
     opacity: 0;
     transform: translateY(24px) scale(0.97);
