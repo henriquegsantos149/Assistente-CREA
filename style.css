@@ -20,7 +20,7 @@
     --accent-glow:      color-mix(in srgb, var(--accent-green) 20%, transparent);
 
     /* Grid Theme */
-    --grid-color:       rgba(16, 185, 129, 0.25); /* Verde Neon 25% */
+    --grid-color:       rgba(16, 185, 129, 0.05); /* Verde Neon 5% - Mais sutil */
 
     /* Formas — O Símbolo do "A": Mistura de reto e curvo */
     --radius-mixed:     2.5rem 0 2.5rem 0;
