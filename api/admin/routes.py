@@ -248,11 +248,10 @@ def upload_rag_pdf():
         if not agent_table:
             return jsonify({"erro": "Agente/Tabela não informada"}), 400
 
-        # Salvar arquivo temporariamente
+        # Salvar arquivo temporariamente (usando tempfile para compatibilidade com serverless/Vercel)
+        import tempfile
         filename = secure_filename(file.filename)
-        # Vamos salvar na pasta 'Documentos'
-        upload_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Documentos')
-        os.makedirs(upload_dir, exist_ok=True)
+        upload_dir = tempfile.gettempdir()
         filepath = os.path.join(upload_dir, filename)
         file.save(filepath)
 
