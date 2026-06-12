@@ -234,9 +234,9 @@ def _supabase_obter_todas_mensagens() -> list:
                 sessoes_data = msg.get("sessoes")
                 user_nome = sessoes_data.get("user_nome") if isinstance(sessoes_data, dict) else "Desconhecido"
                 mensagens.append({
-                    "timestamp": msg.get("created_at"),
+                    "created_at": msg.get("created_at"),   # compatível com parse_chat_history
                     "user_nome": user_nome,
-                    "role": msg.get("sender"),
+                    "sender": msg.get("sender"),           # compatível com parse_chat_history
                     "content": msg.get("content"),
                     "session_id": msg.get("sessao_id")
                 })

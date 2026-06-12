@@ -231,7 +231,7 @@ def list_openrouter_models():
 
 @admin_bp.route('/upload-rag', methods=['POST'])
 def upload_rag_pdf():
-    """Recebe um PDF e processa a vetorização via script Node.js."""
+    """Recebe um PDF e processa a vetorização via OpenRouter Embeddings API."""
     try:
         if 'file' not in request.files:
             return jsonify({"erro": "Nenhum arquivo enviado"}), 400
@@ -281,19 +281,45 @@ def upload_rag_pdf():
         if current_chunk.strip():
             chunks.append(current_chunk.strip())
 
-        # Vetorização (Embeddings) chamando a HuggingFace Inference API (all-MiniLM-L6-v2 -> 384 dimensions)
-        HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
-        headers = {}
-        if os.environ.get("HF_TOKEN"):
-            headers["Authorization"] = f"Bearer {os.environ.get('HF_TOKEN')}"
-            
-        res = requests.post(HF_API_URL, headers=headers, json={"inputs": chunks, "options": {"wait_for_model": True}}, timeout=120)
-        
-        if res.status_code != 200:
-            return jsonify({"erro": f"HuggingFace API erro {res.status_code}", "detalhes": res.text}), 500
-            
-        embeddings = res.json()
-        
+        if not chunks:
+            return jsonify({"erro": "Nenhum chunk de texto gerado do PDF."}), 400
+
+        # Vetorização (Embeddings) via OpenRouter (modelo all-MiniLM-L6-v2 → 384 dimensões)
+        openrouter_key = os.environ.get("OPENROUTER_API_KEY")
+        if not openrouter_key:
+            return jsonify({"erro": "OPENROUTER_API_KEY não configurada no servidor."}), 500
+
+        EMBED_URL = "https://openrouter.ai/api/v1/embeddings"
+        embed_headers = {
+            "Authorization": f"Bearer {openrouter_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://ambientalpro.com.br",
+            "X-Title": "Assistente IA - Ambiental Pro",
+        }
+
+        # OpenRouter aceita até 96 inputs por chamada; processa em lotes
+        BATCH_SIZE = 50
+        all_embeddings = []
+        for i in range(0, len(chunks), BATCH_SIZE):
+            batch = chunks[i:i + BATCH_SIZE]
+            embed_payload = {
+                "model": "huggingface/sentence-transformers/all-MiniLM-L6-v2",
+                "input": batch
+            }
+            res = requests.post(EMBED_URL, headers=embed_headers, json=embed_payload, timeout=120)
+            if res.status_code != 200:
+                return jsonify({
+                    "erro": f"OpenRouter Embeddings API erro {res.status_code}",
+                    "detalhes": res.text
+                }), 500
+            data = res.json()
+            # OpenRouter retorna { data: [ { embedding: [...] }, ... ] }
+            for item in data.get("data", []):
+                all_embeddings.append(item.get("embedding", []))
+
+        if len(all_embeddings) != len(chunks):
+            return jsonify({"erro": f"Inconsistência: {len(chunks)} chunks mas {len(all_embeddings)} embeddings."}), 500
+
         # Inserção em Massa no Supabase (REST API puro)
         supabase_url = os.environ.get("SUPABASE_URL")
         supabase_key = os.environ.get("SUPABASE_KEY")
@@ -308,7 +334,7 @@ def upload_rag_pdf():
         }
         
         rows = []
-        for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+        for i, (chunk, emb) in enumerate(zip(chunks, all_embeddings)):
             rows.append({
                 "content": chunk,
                 "metadata": {"file": filename, "chunk_index": i},
@@ -318,7 +344,7 @@ def upload_rag_pdf():
         supa_res = requests.post(f"{supabase_url}/rest/v1/{agent_table}", headers=supa_headers, json=rows, timeout=30)
         
         if supa_res.status_code in (200, 201):
-            log_str = f"✅ Sucesso! PDF {filename} lido, dividido em {len(chunks)} partes e vetorizado via Python API Serverless."
+            log_str = f"✅ Sucesso! {filename} dividido em {len(chunks)} partes e vetorizado via OpenRouter."
             return jsonify({"status": "sucesso", "log": log_str})
         else:
             return jsonify({"erro": f"Supabase insert erro {supa_res.status_code}", "detalhes": supa_res.text}), 500
@@ -339,16 +365,17 @@ def get_chat_history():
             if sid not in sessoes:
                 sessoes[sid] = {
                     "session_id": sid,
-                    "data": msg.get('timestamp'),
-                    "usuario": "Usuário Anônimo",
+                    "data": msg.get('created_at'),
+                    "usuario": msg.get('user_nome', 'Usuário Anônimo'),
                     "primeira_pergunta": "",
                     "mensagens": []
                 }
             sessoes[sid]['mensagens'].append(msg)
             
             # Tentar achar a primeira pergunta de usuário
-            if msg.get('role') == 'user' and not sessoes[sid]['primeira_pergunta']:
+            if msg.get('sender') == 'user' and not sessoes[sid]['primeira_pergunta']:
                 sessoes[sid]['primeira_pergunta'] = msg.get('content')
+                sessoes[sid]['usuario'] = msg.get('user_nome', 'Usuário Anônimo')
                 
         # Organizar numa lista
         lista_sessoes = list(sessoes.values())
