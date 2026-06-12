@@ -220,15 +220,51 @@ def _supabase_persistir_mensagem(sessao_id, sender, content) -> bool:
     return False
 
 
+def _supabase_obter_todas_mensagens() -> list:
+    if not _is_supabase_configured():
+        return []
+
+    url = f"{os.environ.get('SUPABASE_URL')}/rest/v1/mensagens?select=created_at,sender,content,sessao_id,sessoes(user_nome)&order=created_at.desc&limit=500"
+    try:
+        res = requests.get(url, headers=_get_supabase_headers(), timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            mensagens = []
+            for msg in data:
+                sessoes_data = msg.get("sessoes")
+                user_nome = sessoes_data.get("user_nome") if isinstance(sessoes_data, dict) else "Desconhecido"
+                mensagens.append({
+                    "timestamp": msg.get("created_at"),
+                    "user_nome": user_nome,
+                    "role": msg.get("sender"),
+                    "content": msg.get("content"),
+                    "session_id": msg.get("sessao_id")
+                })
+            return mensagens
+        else:
+            logger.error("[DB Supabase] Falha ao obter mensagens (HTTP %s): %s", res.status_code, res.text)
+    except Exception as exc:
+        logger.error("[DB Supabase] Erro ao buscar mensagens: %s", exc)
+    return []
+
+
 # ─────────────────────────────────────────────
 #  SELEÇÃO AUTOMÁTICA DE BACKEND
 # ─────────────────────────────────────────────
 def _get_active_backend() -> str:
     """
     Retorna o backend ativo com base nas variáveis de ambiente.
-    Padrão: 'sqlite' (sem configuração necessária).
+    Padrão: Auto-detecta 'supabase' se a URL e KEY existirem. Senão, 'sqlite'.
     """
-    backend = os.environ.get("DATABASE_BACKEND", "sqlite").lower()
+    backend = os.environ.get("DATABASE_BACKEND")
+    if not backend:
+        if _is_supabase_configured():
+            backend = "supabase"
+        else:
+            backend = "sqlite"
+    else:
+        backend = backend.lower()
+        
     if backend == "supabase" and not _is_supabase_configured():
         logger.warning(
             "[DB] Backend 'supabase' solicitado mas SUPABASE_URL/SUPABASE_KEY ausentes. "
@@ -274,6 +310,5 @@ def obter_todas_mensagens() -> list:
     """
     backend = _get_active_backend()
     if backend == "supabase":
-        # Placeholder para Supabase (requer RPC ou select nas duas tabelas via REST)
-        return []
+        return _supabase_obter_todas_mensagens()
     return _sqlite_obter_todas_mensagens()

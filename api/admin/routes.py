@@ -248,24 +248,83 @@ def upload_rag_pdf():
         if not agent_table:
             return jsonify({"erro": "Agente/Tabela não informada"}), 400
 
-        # Salvar arquivo temporariamente (usando tempfile para compatibilidade com serverless/Vercel)
+        # Salvar arquivo temporariamente
         import tempfile
+        import PyPDF2
         filename = secure_filename(file.filename)
         upload_dir = tempfile.gettempdir()
         filepath = os.path.join(upload_dir, filename)
         file.save(filepath)
 
-        # Chamar script Node
-        node_script = os.path.join(os.path.dirname(__file__), '..', '..', 'scripts', 'vetorizador', 'processar_pdf.mjs')
+        # Parse PDF nativo em Python (Serverless friendly)
+        text_content = ""
+        with open(filepath, "rb") as f:
+            reader = PyPDF2.PdfReader(f)
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    text_content += text + "\n"
+
+        if not text_content.strip():
+            return jsonify({"erro": "Nenhum texto encontrado no PDF."}), 400
+
+        # Chunking (quebra em parágrafos, máx ~180 palavras)
+        paragraphs = text_content.split('\n\n')
+        chunks = []
+        current_chunk = ""
+        current_words = 0
+        for p in paragraphs:
+            words = len(p.split())
+            if current_words + words > 180 and current_chunk:
+                chunks.append(current_chunk.strip())
+                current_chunk = ""
+                current_words = 0
+            current_chunk += p + "\n\n"
+            current_words += words
+        if current_chunk.strip():
+            chunks.append(current_chunk.strip())
+
+        # Vetorização (Embeddings) chamando a HuggingFace Inference API (all-MiniLM-L6-v2 -> 384 dimensions)
+        HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+        headers = {}
+        if os.environ.get("HF_TOKEN"):
+            headers["Authorization"] = f"Bearer {os.environ.get('HF_TOKEN')}"
+            
+        res = requests.post(HF_API_URL, headers=headers, json={"inputs": chunks, "options": {"wait_for_model": True}}, timeout=120)
         
-        # Como o subprocess é bloqueante e pode demorar, vamos aguardar para ter o resultado.
-        # Em produção, idealmente seria async/fila, mas para dashboard admin está OK.
-        result = subprocess.run(['node', node_script, filepath, agent_table], capture_output=True, text=True)
+        if res.status_code != 200:
+            return jsonify({"erro": f"HuggingFace API erro {res.status_code}", "detalhes": res.text}), 500
+            
+        embeddings = res.json()
         
-        if result.returncode == 0:
-            return jsonify({"status": "sucesso", "log": result.stdout})
+        # Inserção em Massa no Supabase (REST API puro)
+        supabase_url = os.environ.get("SUPABASE_URL")
+        supabase_key = os.environ.get("SUPABASE_KEY")
+        if not supabase_url or not supabase_key:
+            return jsonify({"erro": "SUPABASE_URL ou SUPABASE_KEY ausentes"}), 500
+            
+        supa_headers = {
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        }
+        
+        rows = []
+        for i, (chunk, emb) in enumerate(zip(chunks, embeddings)):
+            rows.append({
+                "content": chunk,
+                "metadata": {"file": filename, "chunk_index": i},
+                "embedding": emb
+            })
+            
+        supa_res = requests.post(f"{supabase_url}/rest/v1/{agent_table}", headers=supa_headers, json=rows, timeout=30)
+        
+        if supa_res.status_code in (200, 201):
+            log_str = f"✅ Sucesso! PDF {filename} lido, dividido em {len(chunks)} partes e vetorizado via Python API Serverless."
+            return jsonify({"status": "sucesso", "log": log_str})
         else:
-            return jsonify({"erro": "Erro na vetorização", "detalhes": result.stderr}), 500
+            return jsonify({"erro": f"Supabase insert erro {supa_res.status_code}", "detalhes": supa_res.text}), 500
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
