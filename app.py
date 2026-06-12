@@ -41,10 +41,14 @@ CORS(app, resources={r"/*": {"origins": origens_permitidas}})
 app.register_blueprint(crea_bp, url_prefix="/api/crea")
 app.register_blueprint(admin_bp, url_prefix="/api/admin")
 
-# TODO: Futuros Blueprints (Geo, Experts, Secretaria)
-# app.register_blueprint(geo_bp, url_prefix='/api/geo')
-# app.register_blueprint(experts_bp, url_prefix='/api/experts')
-# app.register_blueprint(secretaria_bp, url_prefix='/api/secretaria')
+# Importação dos novos Blueprints
+from api.portfolio_geo.routes import portfolio_geo_bp
+from api.experts.routes import experts_bp
+from api.secretaria.routes import secretaria_bp
+
+app.register_blueprint(portfolio_geo_bp, url_prefix='/api/portfolio_geo')
+app.register_blueprint(experts_bp, url_prefix='/api/experts')
+app.register_blueprint(secretaria_bp, url_prefix='/api/secretaria')
 
 
 @app.route("/api/health", methods=["GET"])

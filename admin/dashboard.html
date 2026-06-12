@@ -445,13 +445,27 @@
                     // Manter apenas a primeira opção ("Modelos Gratuitos")
                     select.innerHTML = '<option value="free-fallback">🎁 Modelos Gratuitos (Fallback Inteligente Atual)</option>';
                     
-                    // Ordenar por nome e adicionar modelos da OpenRouter
+                    // Whitelist dos principais modelos que funcionam bem
+                    const recommendedModels = [
+                        "google/gemini-flash-1.5",
+                        "google/gemini-pro-1.5",
+                        "anthropic/claude-3.5-sonnet",
+                        "anthropic/claude-3-haiku",
+                        "openai/gpt-4o-mini",
+                        "openai/gpt-4o",
+                        "meta-llama/llama-3.1-8b-instruct",
+                        "meta-llama/llama-3.1-70b-instruct"
+                    ];
+                    
+                    // Ordenar por nome e adicionar modelos filtrados
                     data.data.sort((a, b) => (a.name || a.id).localeCompare(b.name || b.id));
                     data.data.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.id;
-                        opt.textContent = m.name || m.id;
-                        select.appendChild(opt);
+                        if (recommendedModels.includes(m.id)) {
+                            const opt = document.createElement('option');
+                            opt.value = m.id;
+                            opt.textContent = m.name || m.id;
+                            select.appendChild(opt);
+                        }
                     });
 
                     // Selecionar o valor atual do config

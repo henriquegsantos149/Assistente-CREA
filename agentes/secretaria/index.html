@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin">
+    <title>Secretaria Acadêmica — Ambiental Pro</title>
+    <link rel="icon" type="image/svg+xml" href="../../assets/Logo SVG.svg">
+    <meta name="description" content="Assistente virtual especialista em processos da secretaria acadêmica.">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        const savedTheme = localStorage.getItem('creia-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'light' || (!savedTheme && !systemPrefersDark)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <a href="../../index.html" title="Voltar ao Hub" style="display:flex; align-items:center;"><img src="../../assets/Logo com slogan.svg" alt="Ambiental Pro" class="header-logo"></a>
+                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <div class="theme-switch-wrapper">
+                        <span class="theme-label-text" id="themeLabelText">Dark Mode</span>
+                        <label class="theme-switch">
+                            <input type="checkbox" id="themeCheckbox">
+                            <span class="theme-slider">
+                                <i class="fa-solid fa-moon" style="transform: translateX(-2px)"></i>
+                                <i class="fa-solid fa-sun" style="transform: translateX(2px)"></i>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn-download" id="btnDownload">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Docs
+                        </button>
+                        <div class="dropdown-content" id="dropdownContent">
+                            <a href="#" target="_blank">
+                                <i class="fa-solid fa-file-invoice"></i> Portal Financeiro
+                            </a>
+                            <a href="#" target="_blank">
+                                <i class="fa-solid fa-calendar"></i> Calendário Acadêmico
+                            </a>
+                        </div>
+                    </div>
+                    <button id="restartBtn" class="restart-btn">
+                        <i class="fa-solid fa-rotate-right"></i> Recomeçar
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div style="padding: 0.25rem 0 0;">
+                <span class="agent-identity-chip" style="color: #8B5CF6; background: rgba(139, 92, 246, 0.1);">
+                    <i class="fa-solid fa-headset"></i>
+                    Secretaria Acadêmica &middot; Documentos e Prazos
+                </span>
+            </div>
+            <section class="chat-section" id="chatSection">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Mensagens aparecerão aqui -->
+                    </div>
+                    
+                    <div class="chat-suggestions" id="chatSuggestions">
+                        <button class="suggestion-chip">Quando posso emitir meu certificado?</button>
+                        <button class="suggestion-chip">Como envio minhas horas complementares?</button>
+                        <button class="suggestion-chip">Preciso alterar a data de vencimento do meu boleto.</button>
+                    </div>
+
+                    <!-- Container flexível que oculta/mostra a área de input -->
+                    <div class="dynamic-input-wrapper" id="dynamicInputWrapper" style="opacity: 0; pointer-events: none;">
+                        <div class="interactive-options" id="interactiveOptions" style="display: none;">
+                            <!-- Botões de Sim/Não serão injetados aqui -->
+                        </div>
+
+                        <div class="chat-input-container" id="chatInputContainer">
+                            <form id="chatForm">
+                                <input type="text" id="userInput" placeholder="Digite sua resposta..." autocomplete="off">
+                                <button type="submit" id="sendBtn" aria-label="Enviar mensagem">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <div class="btn-spinner"></div>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+    <script src="../../theme.js"></script>
+
+    <a href="../../admin/login.html" class="admin-floating-btn" title="Painel Administrativo">
+        <i class="fa-solid fa-chart-simple"></i>
+    </a>
+</body>
+</html>

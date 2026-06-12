@@ -140,3 +140,38 @@ language sql stable as $$
   order by embedding <=> query_embedding
   limit match_count;
 $$;
+
+-- =================================================================================
+-- TABELAS DE CHAT E CONFIGURAÇÕES
+-- =================================================================================
+
+-- Tabela de Configurações de Agentes (Regras e Modelos Globais)
+create table if not exists configuracoes_agentes (
+  id text primary key,
+  regras_customizadas text,
+  modelos_fallback jsonb
+);
+
+-- Inserir registro global padrão
+insert into configuracoes_agentes (id, modelos_fallback)
+values ('global', '["openrouter/free", "deepseek/deepseek-v4-flash:free", "google/gemma-4-31b-it:free"]')
+on conflict (id) do nothing;
+
+-- Tabela de Sessões
+create table if not exists sessoes (
+  id uuid primary key default gen_random_uuid(),
+  agente_id text not null,
+  user_nome text,
+  metadata jsonb default '{}'::jsonb,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- Tabela de Mensagens
+create table if not exists mensagens (
+  id bigserial primary key,
+  sessao_id uuid references sessoes(id) on delete cascade not null,
+  sender text not null,
+  content text,
+  created_at timestamp with time zone default now()
+);

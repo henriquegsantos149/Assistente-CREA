@@ -43,122 +43,61 @@
         <main class="main-content hub-main">
             <div class="agents-grid">
 
-                <!-- Card CREA -->
-                <a href="agentes/crea/index.html" class="agent-card" style="--card-color: #10B981;">
-                    <div class="agent-icon" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">
-                        <i class="fa-solid fa-scale-balanced"></i>
-                    </div>
-                    <div class="agent-info">
-                        <div class="agent-info-header">
-                            <h3>Assistente CREA</h3>
-                            <span class="status-badge available">Disponível</span>
-                        </div>
-                        <p>Especialista em legislação profissional, atribuições do sistema CONFEA/CREA e registro no INCRA.</p>
-                    </div>
-                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
-                </a>
-
-                <!-- Card Portfólio Geo -->
-                <a href="agentes/em-breve.html" class="agent-card" style="--card-color: #3B82F6;">
-                    <div class="agent-icon" style="background: rgba(59, 130, 246, 0.12); color: #3B82F6;">
-                        <i class="fa-solid fa-map-location-dot"></i>
-                    </div>
-                    <div class="agent-info">
-                        <div class="agent-info-header">
-                            <h3>Portfólio Geo</h3>
-                            <span class="status-badge coming-soon">Em breve</span>
-                        </div>
-                        <p>Análise visual de portfólios de geoprocessamento. Envie seus PDFs com mapas para avaliação técnica.</p>
-                    </div>
-                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
-                </a>
-
-                <!-- Card Experts de Cursos -->
-                <div class="agent-card" id="btn-experts" style="--card-color: #F59E0B;">
-                    <div class="agent-icon" style="background: rgba(245, 158, 11, 0.12); color: #F59E0B;">
+                <!-- Card GeoExpert -->
+                <a href="agentes/experts/index.html" class="agent-card premium-card" style="--card-color: #F59E0B; --card-bg: linear-gradient(145deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.01) 100%);">
+                    <div class="agent-icon" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05)); color: #F59E0B; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
                         <i class="fa-solid fa-graduation-cap"></i>
                     </div>
                     <div class="agent-info">
                         <div class="agent-info-header">
-                            <h3>Experts de Cursos</h3>
-                            <span class="status-badge coming-soon">Em breve</span>
+                            <h3 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">GeoExpert</h3>
                         </div>
-                        <p>Tire dúvidas técnicas diretamente com a base de conhecimento (RAG) da sua Pós-graduação.</p>
+                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Tire dúvidas técnicas com um especialista em QGIS, geoprocessamento, georreferenciamento e sensoriamento remoto.</p>
                     </div>
-                    <div class="agent-action"><i class="fa-solid fa-chevron-down"></i></div>
-                </div>
+                    <div class="agent-action premium-action"><i class="fa-solid fa-arrow-right"></i></div>
+                </a>
 
-                <!-- Card Secretaria Acadêmica -->
-                <a href="agentes/em-breve.html" class="agent-card" style="--card-color: #8B5CF6;">
-                    <div class="agent-icon" style="background: rgba(139, 92, 246, 0.12); color: #8B5CF6;">
-                        <i class="fa-solid fa-headset"></i>
+                <!-- Card Assistente de Portfólio -->
+                <a href="agentes/portfolio-geo/index.html" class="agent-card premium-card" style="--card-color: #3B82F6; --card-bg: linear-gradient(145deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.01) 100%);">
+                    <div class="agent-icon" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05)); color: #3B82F6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);">
+                        <i class="fa-solid fa-map-location-dot"></i>
                     </div>
                     <div class="agent-info">
                         <div class="agent-info-header">
-                            <h3>Secretaria Acadêmica</h3>
-                            <span class="status-badge coming-soon">Em breve</span>
+                            <h3 style="font-size: 1.4rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Assistente de Portfólio</h3>
                         </div>
-                        <p>Assistente voltado para processos administrativos, emissão de documentos, prazos e mensalidades.</p>
+                        <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary);">Construa um portfólio impressionante com este assistente que pode corrigir seus mapas e te orientar passo a passo na construção dos seus projetos.</p>
                     </div>
-                    <div class="agent-action"><i class="fa-solid fa-arrow-right"></i></div>
+                    <div class="agent-action premium-action"><i class="fa-solid fa-arrow-right"></i></div>
+                </a>
+
+            </div>
+
+            <div class="secondary-agents-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                
+                <!-- Card CREA Simples -->
+                <a href="agentes/crea/index.html" class="agent-card-simple" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-decoration: none; color: var(--text-primary); transition: all 0.2s;">
+                    <i class="fa-solid fa-scale-balanced" style="color: #10B981; font-size: 1.5rem;"></i>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1rem;">Assistente CREA</h4>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Legislação e Registro</span>
+                    </div>
+                </a>
+
+                <!-- Card Secretaria Simples -->
+                <a href="agentes/secretaria/index.html" class="agent-card-simple" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); text-decoration: none; color: var(--text-primary); transition: all 0.2s;">
+                    <i class="fa-solid fa-headset" style="color: #8B5CF6; font-size: 1.5rem;"></i>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1rem;">Secretaria Acadêmica</h4>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Documentos e Financeiro</span>
+                    </div>
                 </a>
 
             </div>
         </main>
     </div>
 
-    <!-- Modal de Seleção de Experts (Nativo <dialog>) -->
-    <dialog class="modal-overlay" id="expertsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Selecione o seu Curso</h2>
-                <button class="close-modal" id="closeExperts" aria-label="Fechar">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="modal-body courses-grid">
-                <a href="agentes/em-breve.html" class="course-btn">
-                    <i class="fa-solid fa-map"></i> Georreferenciamento (GGSR)
-                </a>
-                <a href="agentes/em-breve.html" class="course-btn">
-                    <i class="fa-solid fa-leaf"></i> Licenciamento (ALPA)
-                </a>
-                <a href="agentes/em-breve.html" class="course-btn">
-                    <i class="fa-solid fa-briefcase"></i> MBA IDA
-                </a>
-                <a href="agentes/em-breve.html" class="course-btn">
-                    <i class="fa-solid fa-seedling"></i> Recuperação de Áreas (GRAC)
-                </a>
-                <a href="agentes/em-breve.html" class="course-btn">
-                    <i class="fa-solid fa-magnifying-glass"></i> Perícia Ambiental (PAP)
-                </a>
-            </div>
-        </div>
-    </dialog>
-
     <script>
-        const expertsModal = document.getElementById('expertsModal');
-
-        document.getElementById('btn-experts').addEventListener('click', () => {
-            expertsModal.showModal();
-        });
-
-        document.getElementById('closeExperts').addEventListener('click', () => {
-            expertsModal.close();
-        });
-
-        // Fechar ao clicar fora do modal (no ::backdrop)
-        expertsModal.addEventListener('click', (e) => {
-            const dialogDimensions = expertsModal.getBoundingClientRect();
-            if (
-                e.clientX < dialogDimensions.left ||
-                e.clientX > dialogDimensions.right ||
-                e.clientY < dialogDimensions.top ||
-                e.clientY > dialogDimensions.bottom
-            ) {
-                expertsModal.close();
-            }
-        });
     </script>
     <script src="theme.js"></script>
 
