@@ -13,7 +13,7 @@ def extract_name():
         dados = request.json
         mensagem_aluno = dados.get("mensagem", "")
 
-        system_prompt = "Sua única função é extrair o NOME do usuário a partir da frase fornecida. Responda APENAS com o nome extraído, com a primeira letra maiúscula. Exemplo: se o usuário disser 'Olá, me chamo João Pedro', responda APENAS 'João Pedro'. Se disser 'sou o marcos', responda 'Marcos'. Não escreva mais nenhuma palavra."
+        system_prompt = "Sua única função é extrair o NOME do usuário EXATAMENTE como foi escrito na frase, sem alterar ou corrigir a ortografia (por exemplo, mantenha 'Manoel' com O se estiver escrito assim). Apenas ajuste a primeira letra para maiúscula. Responda APENAS com o nome extraído. Exemplo: se o usuário disser 'Olá, me chamo João Pedro', responda APENAS 'João Pedro'. Se disser 'sou o marcos', responda 'Marcos'. Não escreva mais nenhuma palavra."
 
         try:
             resposta_texto = call_openrouter(system_prompt, mensagem_aluno, max_tokens=10, temperature=0.1)
