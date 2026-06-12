@@ -10,26 +10,40 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 def get_modelos_fallback():
-    try:
-        config_path = Path(__file__).parent.parent.parent / "data" / "config.json"
-        if config_path.exists():
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = json.load(f)
-                return config.get("models", [
-                    "openrouter/free",
-                    "deepseek/deepseek-v4-flash:free",
-                    "google/gemma-4-31b-it:free",
-                    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
-                ])
-    except Exception as e:
-        logger.error(f"Erro ao carregar config.json: {e}")
-        
-    return [
+    default_models = [
         "openrouter/free",
         "deepseek/deepseek-v4-flash:free",
         "google/gemma-4-31b-it:free",
         "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
     ]
+    try:
+        from api.shared.db import _get_active_backend
+        backend = _get_active_backend()
+        if backend == "supabase":
+            url = f"{os.environ.get('SUPABASE_URL', '').rstrip('/')}/rest/v1/configuracoes_agentes?select=modelos_fallback&id=eq.global"
+            key = os.environ.get("SUPABASE_KEY", "")
+            if url and key:
+                headers = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+                res = requests.get(url, headers=headers, timeout=5)
+                if res.status_code == 200:
+                    data = res.json()
+                    if data and len(data) > 0:
+                        modelos = data[0].get("modelos_fallback")
+                        if modelos and isinstance(modelos, list) and len(modelos) > 0:
+                            return modelos
+    except Exception as e:
+        logger.error(f"Erro ao buscar modelos do Supabase: {e}")
+
+    try:
+        config_path = Path(__file__).parent.parent.parent / "data" / "config.json"
+        if config_path.exists():
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                return config.get("models", default_models)
+    except Exception as e:
+        logger.error(f"Erro ao carregar config.json: {e}")
+        
+    return default_models
 
 
 def call_openrouter(system_prompt, user_message, history=None, max_tokens=None, temperature=0.1):

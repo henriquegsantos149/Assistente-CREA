@@ -60,11 +60,20 @@ def chat_crea():
         # Busca regras customizadas
         regras_customizadas = ""
         try:
-            from api.shared.db import get_supabase_client
-            supa = get_supabase_client()
-            res = supa.table("configuracoes_agentes").select("regras_customizadas").eq("id", "crea").execute()
-            if res.data and len(res.data) > 0:
-                regras_customizadas = res.data[0].get("regras_customizadas", "")
+            import os
+            import requests
+            from api.shared.db import _get_active_backend
+            backend = _get_active_backend()
+            if backend == "supabase":
+                url = f"{os.environ.get('SUPABASE_URL', '').rstrip('/')}/rest/v1/configuracoes_agentes?select=regras_customizadas&id=eq.crea"
+                key = os.environ.get("SUPABASE_KEY", "")
+                if url and key:
+                    headers = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+                    res = requests.get(url, headers=headers, timeout=5)
+                    if res.status_code == 200:
+                        data = res.json()
+                        if data and len(data) > 0:
+                            regras_customizadas = data[0].get("regras_customizadas", "")
         except Exception as err:
             print(f"[RULES WARNING] Falha ao buscar regras customizadas: {err}")
         
